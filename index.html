@@ -25,13 +25,14 @@ button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparen
 [hidden]{display:none!important}
 
 /* ---------- Bühne ---------- */
-#stage{position:fixed;inset:0;display:grid;grid-template-columns:minmax(0,42fr) minmax(0,58fr);grid-template-rows:minmax(0,1fr);gap:2.5vw;padding:4vh 3vw 3vh 4vw}
-#left{display:flex;flex-direction:column;min-height:0;overflow:hidden;padding-bottom:calc(var(--padL,0px) + 2vh);--fs:32px;position:relative;touch-action:none}
-#left.free{position:fixed;z-index:1;padding:12px 14px 16px;background:rgba(0,0,0,.16);border-radius:14px}
+#stage{position:fixed;inset:0;display:grid;grid-template-columns:minmax(0,42fr) minmax(0,58fr);grid-template-rows:auto minmax(0,1fr);gap:1.5vh 2.5vw;padding:4vh 3vw 3vh 4vw}
+#left{display:flex;flex-direction:column;min-height:0;overflow:hidden;padding-bottom:calc(var(--padL,0px) + 2vh);--fs:24px;position:relative;touch-action:none;grid-column:1;grid-row:2}
+#left.free{position:fixed;z-index:1;padding:12px 14px 16px;background:rgba(0,0,0,.16);border-radius:14px;height:auto}
 #leftRz{position:absolute;right:0;bottom:0;width:44px;height:44px;z-index:2;cursor:nwse-resize;border-radius:0 0 14px 0;background:linear-gradient(135deg,transparent 52%,#ffe27a 52%,#ffe27a 60%,transparent 60%,transparent 68%,#ffe27a 68%,#ffe27a 76%,transparent 76%);opacity:.75}
-#titleRow{display:flex;align-items:center;gap:.4em;margin:0 0 .35em;flex:none}
-#title{font-weight:700;margin:0;flex:1;min-width:0;font-size:calc(var(--fs)*1.35);letter-spacing:.01em}
-#pgNav{display:flex;align-items:center;gap:.35em;flex:none;font-weight:700;font-size:max(16px,calc(var(--fs)*.7))}
+/* Überschrift: immer 36 px, immer oben links an derselben Stelle (bewegt sich nicht mit dem Tagesplan) */
+#titleRow{grid-column:1;grid-row:1;display:flex;align-items:center;gap:12px;margin:0;min-width:0}
+#title{font-weight:700;margin:0;flex:1;min-width:0;font-size:36px;line-height:1.15;letter-spacing:.01em}
+#pgNav{display:flex;align-items:center;gap:8px;flex:none;font-weight:700;font-size:20px}
 .pg{width:max(44px,1.9em);height:max(44px,1.9em);border-radius:50%;border:0;background:rgba(255,255,255,.18);color:#fff;font-size:1em;display:grid;place-items:center;padding:0}
 .pg:disabled{opacity:.3}
 .icon.none{background:none;box-shadow:none}
@@ -69,7 +70,7 @@ button.chip:active{transform:scale(.96)}
 .hint{opacity:.75;font-size:.7em;font-weight:600}
 
 /* ---------- rechts ---------- */
-#right{display:flex;flex-direction:column;min-height:0;min-width:0;padding-bottom:var(--padR,0px);grid-column:2;grid-row:1}
+#right{display:flex;flex-direction:column;min-height:0;min-width:0;padding-bottom:var(--padR,0px);grid-column:2;grid-row:1 / span 2}
 .tab{height:44px;min-width:44px;flex:none;border-radius:10px;border:2px solid rgba(255,255,255,.3);background:rgba(0,0,0,.18);color:#fff;font-weight:700;font-size:15px;display:flex;align-items:center;gap:6px;padding:0 10px;position:relative}
 .tab.on{border-color:#ffe27a;background:rgba(255,255,255,.18)}
 .tab img{height:34px;max-width:52px;object-fit:cover;border-radius:4px;background:#fff}
@@ -162,9 +163,9 @@ body.standalone #mFull{display:none}
 
 /* Tablet hochkant: Ablauf über die ganze Breite, unten Uhr + Info-Karte nebeneinander */
 @media (orientation:portrait){
-  #stage{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) var(--botH,0px);gap:2vh;padding-right:max(4vw,env(safe-area-inset-right))}
+  #stage{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) var(--botH,0px);gap:1.5vh;padding-right:max(4vw,env(safe-area-inset-right))}
   #left{padding-bottom:0}
-  #right{margin-left:calc(var(--clockW,0px) + 3vw);padding-bottom:56px;grid-column:1;grid-row:2}
+  #right{margin-left:calc(var(--clockW,0px) + 3vw);padding-bottom:56px;grid-column:1;grid-row:3}
   #editor{width:min(660px,82vw)}
   #penbar{top:auto;transform:none;bottom:calc(max(10px,env(safe-area-inset-bottom)) + 52px);grid-template-columns:repeat(7,48px)}
   #penbar .sep{display:none}
@@ -173,8 +174,8 @@ body.standalone #mFull{display:none}
 </head>
 <body>
 <div id="stage">
+  <div id="titleRow"><h1 id="title">Was liegt an?</h1><div id="pgNav" hidden><button class="pg" id="pgPrev" title="Vorherige Stunde">◀</button><span id="pgNum"></span><button class="pg" id="pgNext" title="Nächste Stunde">▶</button></div></div>
   <section id="left">
-    <div id="titleRow"><h1 id="title">Was liegt an?</h1><div id="pgNav" hidden><button class="pg" id="pgPrev" title="Vorherige Stunde">◀</button><span id="pgNum"></span><button class="pg" id="pgNext" title="Nächste Stunde">▶</button></div></div>
     <ul id="agenda"></ul>
     <div id="leftRz" title="Zum Vergrößern/Verkleinern ziehen"></div>
   </section>
@@ -470,10 +471,11 @@ function uncheckLast(){let best=-1,t=0;P.items.forEach((_,i)=>{const v=S.done[dk
 function layoutLeftBox(){
   const L=$('#left'),b=S.leftBox;
   L.classList.toggle('free',!!b);
-  if(!b){L.style.width=L.style.height=L.style.left=L.style.top='';return}
-  const w=clamp(b.w*innerWidth,220,innerWidth-8),h=clamp(b.h*innerHeight,150,innerHeight-8);
-  L.style.width=w+'px';L.style.height=h+'px';
-  L.style.left=clamp(b.x*innerWidth,0,innerWidth-w)+'px';L.style.top=clamp(b.y*innerHeight,0,innerHeight-h)+'px';
+  if(!b){L.style.width=L.style.left=L.style.top=L.style.maxHeight='';return}
+  // frei: Breite vom Rahmen, Höhe richtet sich nach dem Inhalt (höchstens bis zum unteren Rand)
+  const w=clamp(b.w*innerWidth,200,innerWidth-8),top=clamp(b.y*innerHeight,0,innerHeight-80);
+  L.style.width=w+'px';L.style.left=clamp(b.x*innerWidth,0,innerWidth-w)+'px';L.style.top=top+'px';
+  L.style.maxHeight=(innerHeight-top-8)+'px';
 }
 function fitLeft(){
   const left=$('#left');
@@ -488,10 +490,10 @@ function fitLeft(){
   stage.style.setProperty('--botH',(!portrait?0:S.clock?(P.info.length?Math.round(innerHeight*.22):0):Math.round(Math.max(ch,P.info.length?innerHeight*.22:0)))+'px');
   left.classList.remove('tight');
   const ag=$('#agenda');ag.classList.remove('tight');
-  // Schrift so groß wie möglich: alles muss in die Höhe passen und kein Wort darf mittendrin umbrechen
+  // Tagesplan startet mit 24 px (an der gelben Ecke größer/kleiner ziehbar). Nur wenn er so nicht
+  // auf den Bildschirm passt oder ein Wort mittendrin umbrechen müsste, wird die Schrift kleiner.
   const tooWide=()=>[...ag.querySelectorAll('.label')].some(l=>l.scrollWidth>l.clientWidth+1);
-  // frei gezogener Rahmen: Schrift richtet sich nur nach dem Rahmen (größer ziehen = größere Schrift)
-  let fs=S.leftBox?Math.min(left.clientHeight*0.1,left.clientWidth*0.105,80):Math.min(innerHeight*0.058,left.clientWidth*(portrait?0.08:0.105),56);
+  let fs=S.planFs||24;
   left.style.setProperty('--fs',fs+'px');
   let g=0;while((left.scrollHeight>left.clientHeight+1||tooWide())&&fs>11&&g++<80){fs-=1;left.style.setProperty('--fs',fs+'px')}
   if(tooWide())ag.classList.add('tight');
@@ -586,19 +588,20 @@ function layoutClock(){
   const L=$('#left'),rz=$('#leftRz');let m=null,dragged=0;
   L.addEventListener('pointerdown',e=>{
     if(e.pointerType==='mouse'&&e.button!==0)return;
-    m={t:e.target===rz?'size':'move',id:e.pointerId,x0:e.clientX,y0:e.clientY,r:L.getBoundingClientRect(),on:false};
+    m={t:e.target===rz?'size':'move',id:e.pointerId,x0:e.clientX,y0:e.clientY,r:L.getBoundingClientRect(),fs0:S.planFs||24,on:false};
     if(m.t==='size')e.preventDefault();
   });
   addEventListener('pointermove',e=>{
     if(!m||e.pointerId!==m.id)return;
     const dx=e.clientX-m.x0,dy=e.clientY-m.y0,r=m.r,iw=innerWidth,ih=innerHeight;
     if(!m.on){if(Math.hypot(dx,dy)<(m.t==='size'?3:10))return;m.on=true;try{L.setPointerCapture(m.id)}catch(_){}}
-    if(m.t==='move'){S.leftBox={x:(r.left+dx)/iw,y:(r.top+dy)/ih,w:r.width/iw,h:r.height/ih};layoutLeftBox()}
-    else{S.leftBox={x:r.left/iw,y:r.top/ih,w:Math.max(220,r.width+dx)/iw,h:Math.max(150,r.height+dy)/ih};fitLeft()}
+    if(m.t==='move'){S.leftBox={x:(r.left+dx)/iw,y:(r.top+dy)/ih,w:r.width/iw};layoutLeftBox()}
+    // Ecke: Rahmen breiter/schmaler, Schrift wächst/schrumpft im gleichen Verhältnis
+    else{const w=Math.max(200,r.width+dx);S.leftBox={x:r.left/iw,y:r.top/ih,w:w/iw};S.planFs=Math.round(clamp(m.fs0*w/r.width,12,64)*10)/10;fitLeft()}
   });
   const up=e=>{
     if(!m||e.pointerId!==m.id)return;
-    if(m.on){const r=L.getBoundingClientRect();S.leftBox={x:r.left/innerWidth,y:r.top/innerHeight,w:r.width/innerWidth,h:r.height/innerHeight};fitLeft();save();dragged=Date.now()}
+    if(m.on){const r=L.getBoundingClientRect();S.leftBox={x:r.left/innerWidth,y:r.top/innerHeight,w:r.width/innerWidth};fitLeft();save();dragged=Date.now()}
     m=null;
   };
   addEventListener('pointerup',up);addEventListener('pointercancel',up);
@@ -899,9 +902,9 @@ $('#lSave').onclick=async()=>{
   const ok=await DB.set('lessons',ex?all.map(l=>l===ex?rec:l):[...all,rec]);
   toast(ok?'„'+name+'“ gespeichert':'Speichern ging nicht – bitte „Als Datei sichern“ nutzen.');renderLessons();
 };
-$('#lNew').onclick=()=>confirmTap($('#lNew'),()=>{S={text:'Titel: Was liegt an?\n',done:{},pages:[],view:'auto',focus:null,sheet:{...S.sheet,on:false},infoBox:S.infoBox,clock:S.clock,leftBox:S.leftBox,std:0};lastCur=-2;$('#lname').value='';src.value=S.text;render();save();src.focus()},'Aktuelle Stunde leeren?');
+$('#lNew').onclick=()=>confirmTap($('#lNew'),()=>{S={text:'Titel: Was liegt an?\n',done:{},pages:[],view:'auto',focus:null,sheet:{...S.sheet,on:false},infoBox:S.infoBox,clock:S.clock,leftBox:S.leftBox,planFs:S.planFs,std:0};lastCur=-2;$('#lname').value='';src.value=S.text;render();save();src.focus()},'Aktuelle Stunde leeren?');
 
-$('#lLayout').onclick=()=>{S.leftBox=null;S.infoBox=null;S.clock=null;render();save();toast('Ablauf, Uhr und Info-Karte sind wieder an ihrem Platz')};
+$('#lLayout').onclick=()=>{S.leftBox=null;S.planFs=null;S.infoBox=null;S.clock=null;render();save();toast('Ablauf, Uhr und Info-Karte sind wieder an ihrem Platz')};
 
 /* Datei sichern / öffnen */
 let framed=true;try{framed=window.self!==window.top}catch(_){}

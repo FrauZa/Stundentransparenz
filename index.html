@@ -35,7 +35,7 @@ button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparen
 #leftRz{position:absolute;right:0;bottom:0;width:44px;height:44px;z-index:2;cursor:nwse-resize;border-radius:0 0 14px 0;background:linear-gradient(135deg,transparent 52%,#ffe27a 52%,#ffe27a 60%,transparent 60%,transparent 68%,#ffe27a 68%,#ffe27a 76%,transparent 76%);opacity:.75}
 /* Überschrift: immer 30 px, immer einzeilig oben links an derselben Stelle (bewegt sich nicht mit dem Tagesplan).
    Sie geht über die ganze Breite, damit auch lange Titel in eine Zeile passen. */
-#titleRow{grid-column:1 / -1;grid-row:1;display:flex;align-items:center;gap:16px;margin:0;min-width:0}
+#titleRow{grid-column:1 / -1;grid-row:1;display:flex;align-items:center;justify-content:center;gap:16px;margin:0;min-width:0}
 #title{font-weight:700;margin:0;flex:0 1 auto;min-width:0;font-size:34px;color:#d9dee2;line-height:1.2;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #pgNav{display:flex;align-items:center;gap:8px;flex:none;font-weight:700;font-size:20px}
 .pg{width:max(44px,1.9em);height:max(44px,1.9em);border-radius:50%;border:0;background:rgba(255,255,255,.18);color:#fff;font-size:1em;display:grid;place-items:center;padding:0}
@@ -520,7 +520,6 @@ function renderAgenda(){
     if(i===cur)li.classList.add('current');
     if(i===next)li.classList.add('next');
     if(i===cur)li.append(el('span','tag','jetzt'));
-    if(i===next)li.append(el('span','tag','als Nächstes'));
     // nur eigene Karten (oder ein selbst getipptes Emoji) – sonst bleibt der Platz leer
     const ic=el('div','icon'+(it.card?' card':it.icon?'':' none'));
     if(it.card){const cls=it.cardCls!=null?it.cardCls:classOf(P.title),s=srcFor(it.card,cls),k=Object.keys(it.card.srcs).find(q=>it.card.srcs[q]===s);

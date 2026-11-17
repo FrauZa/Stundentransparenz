@@ -1,0 +1,23 @@
+Stunden-Transparenz – App-Version
+=================================
+
+1. Ins Netz stellen (einmalig)
+   - Neues GitHub-Repository anlegen, z. B. "stundentransparenz".
+   - Alle Dateien aus diesem Ordner hochladen ("Add file" -> "Upload files").
+   - Bei Vercel: "Add New..." -> "Project" -> das Repository auswählen -> "Deploy".
+     (Kein Framework, keine Einstellungen nötig.)
+   - Vercel zeigt danach eine Adresse wie https://stundentransparenz.vercel.app
+
+2. Aufs iPad legen (einmalig)
+   - Die Adresse in Safari öffnen.
+   - Teilen -> "Zum Home-Bildschirm" -> "Hinzufügen".
+
+3. Im Unterricht
+   - Auf das Symbol "Was liegt an?" tippen -> startet bildschirmfüllend.
+
+Hinweise
+   - Gespeicherte Stunden und eingefügte Bilder bleiben nur auf dem Gerät.
+     Nichts wird hochgeladen.
+   - Vom PC aufs iPad: "Planen" -> "Als Datei sichern", Datei aufs iPad schicken,
+     dort "Datei öffnen".
+   - Updates: neue index.html bei GitHub hochladen – Vercel aktualisiert automatisch.

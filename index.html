@@ -162,6 +162,11 @@ body.editing #menu{display:none}
 #clockBox{bottom:max(3vh,env(safe-area-inset-bottom))}
 body.standalone #mFull{display:none}
 
+/* Klassen-Maskottchen oben rechts (z. B. Mio bei 2a) – andere Elemente machen Platz */
+#mascot{position:fixed;top:max(2vh,env(safe-area-inset-top));right:max(2.5vw,env(safe-area-inset-right));height:clamp(110px,20vh,200px);width:auto;max-width:28vw;object-fit:contain;background:#fff;border-radius:14px;box-shadow:0 8px 20px rgba(0,0,0,.3);padding:6px;z-index:2;pointer-events:none}
+body.mascot #titleRow{padding-right:calc(var(--mioW,0px) + 16px)}
+body.mascot #panel{padding-right:calc(var(--mioW,0px) + 1vw)}
+
 /* Tablet hochkant: Ablauf über die ganze Breite, unten Uhr + Info-Karte nebeneinander */
 @media (orientation:portrait){
   #stage{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) var(--botH,0px);gap:1.5vh;padding-right:max(4vw,env(safe-area-inset-right))}
@@ -170,6 +175,8 @@ body.standalone #mFull{display:none}
   #editor{width:min(660px,82vw)}
   #penbar{top:auto;transform:none;bottom:calc(max(10px,env(safe-area-inset-bottom)) + 52px);grid-template-columns:repeat(7,48px)}
   #penbar .sep{display:none}
+  body.mascot #panel{padding-right:0}
+  body.mascot #left:not(.free){margin-right:calc(var(--mioW,0px) + 1vw)}
 }
 </style>
 </head>
@@ -186,6 +193,8 @@ body.standalone #mFull{display:none}
     </div>
   </section>
 </div>
+
+<img id="mascot" alt="" hidden>
 
 <div id="sheet" hidden>
   <div id="sheetHead"><span class="grip" title="Zum Verschieben ziehen">⠿</span><div id="pages"></div><button class="hbtn" id="sMax" title="Groß / zurück">⤢</button><button class="hbtn" id="sClose" title="Blatt ausblenden">✕</button></div>
@@ -417,8 +426,20 @@ function currentIndex(){
 function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
 const CHECK='<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="#16202a" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
+/* Klassen-Maskottchen: steht die Klasse im Titel und ist die Karte geladen, erscheint sie oben rechts */
+const MASCOTS=[{re:/(^|[^0-9a-zäöü])2\s?a(?![0-9a-zäöü])/i,card:'Mio'}];
+function renderMascot(){
+  const im=$('#mascot'),root=document.documentElement;
+  const m=MASCOTS.find(x=>x.re.test(P.title||'')),card=m?findCard(m.card):null;
+  document.body.classList.toggle('mascot',!!card);im.hidden=!card;
+  if(!card){root.style.removeProperty('--mioW');return}
+  const s=srcFor(card,0),setW=()=>root.style.setProperty('--mioW',im.offsetWidth+'px');
+  if(im.getAttribute('src')!==s){im.onload=()=>{setW();fitLeft();if(P.info.length)fitInfo()};im.src=s}
+  else if(im.complete)setW();
+}
 function renderAgenda(){
   $('#title').textContent=P.title;
+  renderMascot();
   const many=PLAN.length>1;$('#pgNav').hidden=!many;
   if(many){$('#pgNum').textContent=(S.std+1)+'/'+PLAN.length;$('#pgPrev').disabled=S.std<=0;$('#pgNext').disabled=S.std>=PLAN.length-1}
   const ul=$('#agenda');ul.innerHTML='';

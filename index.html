@@ -31,8 +31,8 @@ button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparen
 /* rechter Rand: nur die Breite ändern (Schrift bleibt gleich) */
 #left{padding-right:16px}
 #leftW{position:absolute;top:0;right:0;bottom:48px;width:16px;z-index:2;cursor:ew-resize;touch-action:none}
-#leftW::after{content:'';position:absolute;top:50%;right:5px;width:5px;height:56px;margin-top:-28px;border-radius:3px;background:#ffe27a;opacity:.75}
-#leftRz{position:absolute;right:0;bottom:0;width:44px;height:44px;z-index:2;cursor:nwse-resize;border-radius:0 0 14px 0;background:linear-gradient(135deg,transparent 52%,#ffe27a 52%,#ffe27a 60%,transparent 60%,transparent 68%,#ffe27a 68%,#ffe27a 76%,transparent 76%);opacity:.75}
+#leftW::after{content:'';position:absolute;top:50%;right:5px;width:5px;height:56px;margin-top:-28px;border-radius:3px;background:#8f959b;opacity:.9}
+#leftRz{position:absolute;right:0;bottom:0;width:44px;height:44px;z-index:2;cursor:nwse-resize;border-radius:0 0 14px 0;background:linear-gradient(135deg,transparent 52%,#8f959b 52%,#8f959b 60%,transparent 60%,transparent 68%,#8f959b 68%,#8f959b 76%,transparent 76%);opacity:.75}
 /* Überschrift: immer 30 px, immer einzeilig oben links an derselben Stelle (bewegt sich nicht mit dem Tagesplan).
    Sie geht über die ganze Breite, damit auch lange Titel in eine Zeile passen. */
 #titleRow{grid-column:1 / -1;grid-row:1;display:flex;align-items:center;justify-content:center;gap:16px;margin:0;min-width:0}
@@ -87,7 +87,7 @@ button.chip:active{transform:scale(.96)}
 #panel{flex:1;min-height:0;position:relative;display:flex;align-items:flex-start;justify-content:center}
 #info{background:#fff;color:#1b1b1b;border-radius:10px;padding:.7em 1em;width:100%;max-height:100%;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.3);position:relative;cursor:move;touch-action:none}
 #info.free{position:fixed;z-index:2;max-height:none}
-#infoRz{position:absolute;right:0;bottom:0;width:40px;height:40px;cursor:nwse-resize;border-radius:0 0 10px 0;background:linear-gradient(135deg,transparent 52%,#9bb5a6 52%,#9bb5a6 60%,transparent 60%,transparent 68%,#9bb5a6 68%,#9bb5a6 76%,transparent 76%)}
+#infoRz{position:absolute;right:0;bottom:0;width:40px;height:40px;cursor:nwse-resize;border-radius:0 0 10px 0;background:linear-gradient(135deg,transparent 52%,#8f959b 52%,#8f959b 60%,transparent 60%,transparent 68%,#8f959b 68%,#8f959b 76%,transparent 76%)}
 #info p{margin:.12em 0;line-height:1.25;font-weight:500}
 #sheet{position:fixed;z-index:4;background:rgba(18,30,25,.94);border-radius:14px;box-shadow:0 16px 44px rgba(0,0,0,.5);padding:0 7px 7px}
 #sheetHead{display:flex;align-items:center;gap:6px;height:58px;cursor:move;touch-action:none;padding:0 2px;overflow:hidden}
@@ -95,7 +95,7 @@ button.chip:active{transform:scale(.96)}
 #pages{display:flex;gap:6px;align-items:center;overflow-x:auto;min-width:0;flex:1;scrollbar-width:none}
 .hbtn{flex:none;height:44px;min-width:44px;border-radius:10px;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:18px;font-weight:700}
 #board{position:relative;background:#fff;border-radius:8px;overflow:hidden}
-#resize{position:absolute;right:-4px;bottom:-4px;width:46px;height:46px;cursor:nwse-resize;touch-action:none;border-radius:0 0 14px 0;background:linear-gradient(135deg,transparent 52%,#ffe27a 52%,#ffe27a 60%,transparent 60%,transparent 68%,#ffe27a 68%,#ffe27a 76%,transparent 76%)}
+#resize{position:absolute;right:-4px;bottom:-4px;width:46px;height:46px;cursor:nwse-resize;touch-action:none;border-radius:0 0 14px 0;background:linear-gradient(135deg,transparent 52%,#8f959b 52%,#8f959b 60%,transparent 60%,transparent 68%,#8f959b 68%,#8f959b 76%,transparent 76%)}
 #menu button.on{background:#ffe27a;color:#3a3200}
 #board.karo{background-image:linear-gradient(#c5dbf3 1px,transparent 1px),linear-gradient(90deg,#c5dbf3 1px,transparent 1px);background-size:var(--k) var(--k);background-position:-1px -1px}
 #boardImg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;-webkit-user-drag:none}
@@ -112,11 +112,11 @@ body:not(.sheet) #penbar,body.editing #penbar{display:none}
 #bClear.armed{background:#e53935;color:#fff}
 
 /* ---------- Uhr & Timer ---------- */
-#clockBox{position:fixed;left:4vw;bottom:3vh;background:#fff;color:#222;border-radius:12px;padding:8px 10px 7px;text-align:center;width:clamp(124px,max(10.5vw,15vmin),190px);box-shadow:0 8px 20px rgba(0,0,0,.3);z-index:3;cursor:move;touch-action:none}
+#clockBox{position:fixed;left:4vw;bottom:3vh;background:#a2a7ac;color:#1b1b1b;border-radius:12px;padding:8px 10px 7px;text-align:center;width:clamp(124px,max(10.5vw,15vmin),190px);box-shadow:0 8px 20px rgba(0,0,0,.3);z-index:3;cursor:move;touch-action:none}
 #clock{width:100%;display:block}
 #digital{font-weight:700;font-size:clamp(16px,max(1.4vw,2vmin),24px);margin-top:2px}
-#lend{margin-top:5px;padding-top:5px;border-top:1px solid #e3e3e3;font-size:clamp(12px,max(1vw,1.5vmin),15px);font-weight:600;color:#666;line-height:1.15}
-#lend b{display:block;color:#c0392b;font-size:1.35em;margin-top:1px}
+#lend{margin-top:5px;padding-top:5px;border-top:1px solid rgba(0,0,0,.2);font-size:clamp(12px,max(1vw,1.5vmin),15px);font-weight:600;color:#2b2b2b;line-height:1.15}
+#lend b{display:block;color:#8e0e0e;font-size:1.35em;margin-top:1px}
 #timer{margin-top:6px;border-radius:10px;background:#5b5bd6;color:#fff;font-weight:700;font-size:clamp(17px,max(1.6vw,2.3vmin),28px);padding:4px 6px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;position:relative;overflow:hidden}
 #timer .bar{position:absolute;left:0;bottom:0;height:4px;background:#ffe27a}
 #timer.paused{background:#888}

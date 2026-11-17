@@ -460,7 +460,9 @@ function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=
 const CHECK='<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="#16202a" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 /* Klassen-Maskottchen: steht die Klasse im Titel und ist die Karte geladen, erscheint sie links vor der Überschrift */
-const MASCOTS=[{re:/(^|[^0-9a-zäöü])2\s?a(?![0-9a-zäöü])/i,card:'Mio'}];
+// Klasse im Titel -> Bild (Karte mit diesem Namen muss geladen sein). Weitere Klassen einfach ergänzen.
+const MASCOTS=[['2a','Mio'],['1a','Eddi']].map(([k,card])=>({card,
+  re:new RegExp('(^|[^0-9a-zäöü])'+k[0]+'\\s?'+k.slice(1)+'(?![0-9a-zäöü])','i')}));
 function renderMascot(){
   const im=$('#mascot');
   const m=MASCOTS.find(x=>x.re.test(P.title||'')),card=m?findCard(m.card):null;

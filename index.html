@@ -36,7 +36,7 @@ button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparen
 /* Überschrift: immer 30 px, immer einzeilig oben links an derselben Stelle (bewegt sich nicht mit dem Tagesplan).
    Sie geht über die ganze Breite, damit auch lange Titel in eine Zeile passen. */
 #titleRow{grid-column:1 / -1;grid-row:1;display:flex;align-items:center;gap:16px;margin:0;min-width:0}
-#title{font-weight:700;margin:0;flex:0 1 auto;min-width:0;font-size:34px;color:#ffe27a;line-height:1.2;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#title{font-weight:700;margin:0;flex:0 1 auto;min-width:0;font-size:34px;color:#d9dee2;line-height:1.2;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #pgNav{display:flex;align-items:center;gap:8px;flex:none;font-weight:700;font-size:20px}
 .pg{width:max(44px,1.9em);height:max(44px,1.9em);border-radius:50%;border:0;background:rgba(255,255,255,.18);color:#fff;font-size:1em;display:grid;place-items:center;padding:0}
 .pg:disabled{opacity:.3}
@@ -463,14 +463,40 @@ const CHECK='<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" s
 // Klasse im Titel -> Bild (Karte mit diesem Namen muss geladen sein). Weitere Klassen einfach ergänzen.
 const MASCOTS=[['2a','Mio'],['1a','Eddi']].map(([k,card])=>({card,
   re:new RegExp('(^|[^0-9a-zäöü])'+k[0]+'\\s?'+k.slice(1)+'(?![0-9a-zäöü])','i')}));
+// Weißen Hintergrund vom Rand aus durchsichtig machen (wie beim Freistellen von Mio/Eddi).
+// Nötig, wenn das Bild weiß hinterlegt gespeichert ist: .jpg geladen oder vor dem Update geladen.
+// Hellblaue Bewegungsstriche bleiben (nur fast farbloses Weiß zählt als Hintergrund).
+const CUT=new Map();
+function cutoutWhite(src){
+  if(CUT.has(src))return CUT.get(src);
+  const p=new Promise(res=>{const img=new Image();img.onerror=()=>res(src);img.onload=()=>{try{
+    const w=img.naturalWidth,h=img.naturalHeight,c=document.createElement('canvas');c.width=w;c.height=h;
+    const x=c.getContext('2d');x.drawImage(img,0,0);const id=x.getImageData(0,0,w,h),d=id.data,n=w*h;
+    const bg=new Uint8Array(n),q=new Int32Array(n);let qh=0,qt=0;
+    const white=i=>{const r=d[i*4],g=d[i*4+1],b=d[i*4+2],lo=Math.min(r,g,b);return lo>=225&&Math.max(r,g,b)-lo<=12};
+    const add=i=>{if(!bg[i]&&white(i)){bg[i]=1;q[qt++]=i}};
+    for(let X=0;X<w;X++){add(X);add((h-1)*w+X)}for(let Y=0;Y<h;Y++){add(Y*w);add(Y*w+w-1)}
+    while(qh<qt){const i=q[qh++],X=i%w;if(X>0)add(i-1);if(X<w-1)add(i+1);if(i>=w)add(i-w);if(i<n-w)add(i+w)}
+    for(let i=0;i<n;i++){
+      if(bg[i]){d[i*4+3]=0;continue}
+      const X=i%w;// helle Randpixel weich auslaufen lassen
+      if((X>0&&bg[i-1])||(X<w-1&&bg[i+1])||(i>=w&&bg[i-w])||(i<n-w&&bg[i+w])){const lo=Math.min(d[i*4],d[i*4+1],d[i*4+2]);if(lo>170)d[i*4+3]=Math.min(255,(255-lo)*3)}
+    }
+    x.putImageData(id,0,0);res(c.toDataURL('image/png'))}catch(_){res(src)}};img.src=src});
+  CUT.set(src,p);return p;
+}
 function renderMascot(){
   const im=$('#mascot');
   const m=MASCOTS.find(x=>x.re.test(P.title||'')),card=m?findCard(m.card):null;
-  im.hidden=!card;if(!card)return;
-  const s=srcFor(card,0);
-  im.classList.toggle('clear',s.startsWith('data:image/png'));
-  // Titelzeile wird höher, sobald das Bild da ist -> Tagesplan neu einpassen
-  if(im.getAttribute('src')!==s){im.onload=()=>{fitLeft();if(P.info.length)fitInfo()};im.src=s}
+  if(!card){im.hidden=true;im.dataset.k='';return}
+  const s=srcFor(card,0),k=s.length+':'+s.slice(-32);im.dataset.k=k;
+  const show=u=>{
+    if(im.dataset.k!==k)return; // inzwischen andere Stunde
+    im.classList.toggle('clear',u.startsWith('data:image/png'));im.hidden=false;
+    // Titelzeile wird höher, sobald das Bild da ist -> Tagesplan neu einpassen
+    if(im.getAttribute('src')!==u){im.onload=()=>{fitLeft();if(P.info.length)fitInfo()};im.src=u}
+  };
+  if(s.startsWith('data:image/png'))show(s);else{if(im.getAttribute('data-for')!==k)im.hidden=true;im.setAttribute('data-for',k);cutoutWhite(s).then(show)}
 }
 function renderAgenda(){
   $('#title').textContent=P.title;

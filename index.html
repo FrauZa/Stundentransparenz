@@ -67,6 +67,9 @@ button.chip:active{transform:scale(.96)}
 .done .label{text-decoration:line-through;text-decoration-thickness:.08em;opacity:.6}
 .done .icon{opacity:.5}
 .current{background:rgba(255,255,255,.11);box-shadow:inset .28em 0 0 #ffe27a}
+/* Text im Tagesplan grau – nur die aktuelle Phase bleibt weiß */
+.item:not(.current){color:#b3babf}
+.item:not(.current) .chip{color:inherit}
 .tag{position:absolute;top:-.62em;left:3.1em;font-size:.42em;background:#ffe27a;color:#3a3200;padding:.12em .7em;border-radius:99px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
 .next .tag{background:rgba(255,255,255,.88);color:#2e5545}
 .tasks{grid-column:2/4;margin:.35em 0 .05em;padding:0;list-style:none;font-size:.7em;font-weight:600}

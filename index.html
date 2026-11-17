@@ -234,7 +234,7 @@ body.standalone #mFull{display:none}
       <li><code>(EA)</code> <code>(PA)</code> <code>(GA)</code> <code>(Kreis)</code> <code>(Plenum)</code> <code>(leise)</code> = Sozialform</li>
       <li><code>10 min</code> = Zeit – in der Ansicht antippen startet den Timer</li>
       <li><code>[Bild 1]</code> = Bild 1 erscheint automatisch, wenn der Punkt dran ist</li>
-      <li><code>[Buch] S. 12</code> = Bildkarte „Buch“ (nur mit eckigen Klammern; gibt es die Karte nicht, bleibt das Feld leer) · <code>[Buch 2]</code> = Karte für Klasse 2 · Karten: <span id="cardList"></span></li>
+      <li><code>[Buch] S. 12</code> = Bildkarte „Buch“, angezeigt wird nur „S. 12“ (Bilder nur mit eckigen Klammern; gibt es die Karte nicht, bleibt das Feld leer) · <code>[Buch 2]</code> = Karte für Klasse 2 · Karten: <span id="cardList"></span></li>
       <li><code>&gt; Text</code> = Info-Karte rechts – Farbwörter (rot, gelb, grün …) werden farbig</li>
       <li><code>Titel: …</code> = Überschrift. <b>Jede weitere <code>Titel:</code>-Zeile beginnt eine neue Stunde</b> (eigene Seite, blättern mit ◀ ▶). Auch <code>---</code> beginnt eine neue Seite.</li>
     </ul>
@@ -373,9 +373,8 @@ function parseItem(line){
   s=s.replace(/\[\s*bild\s*(\d*)\s*\]/i,(m,n)=>{bild=n?+n:1;return ' '});
   // [Karte Buch] = Karte, das Wort verschwindet aus dem Text
   s=s.replace(/\[\s*karte\s*([^\]]*)\]/i,(m,n)=>{if(!found)found=lookupCard(n.trim())||false;return ' '});
-  // [Buch] = Karte „Buch“, das Wort bleibt im Text stehen (ohne Klammern)
-  // („[Buch 2] S. 12“ zeigt „Buch S. 12“ – die Klassennummer steht nicht im Text)
-  s=s.replace(/\[([^\]]*)\]/g,(m,n)=>{n=n.trim();if(found==null){found=lookupCard(n)||false;if(found&&found.cls!=null)n=n.replace(/[\s_]*\d$/,'')}return n});
+  // [Buch] = Karte „Buch“; alles in [ ] verschwindet aus dem Text („[Buch] S. 12“ zeigt „S. 12“)
+  s=s.replace(/\[([^\]]*)\]/g,(m,n)=>{if(found==null)found=lookupCard(n.trim())||false;return ' '});
   s=s.replace(/\((EA|PA|GA|Kreis|Sitzkreis|Plenum|Alle|leise)\)/gi,(m,k)=>{soz.push(k.toLowerCase());return ' '});
   s=s.replace(/(^|\s)(\d{1,3})\s*(?:minuten|min\.?|')(?=\s|$)/i,(m,a,n)=>{dur=+n;return ' '});
   const label=s.replace(/\s{2,}/g,' ').trim();

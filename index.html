@@ -28,11 +28,15 @@ button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparen
 #stage{position:fixed;inset:0;display:grid;grid-template-columns:minmax(0,42fr) minmax(0,58fr);grid-template-rows:auto minmax(0,1fr);gap:1.5vh 2.5vw;padding:4vh 3vw 3vh 4vw}
 #left{display:flex;flex-direction:column;min-height:0;overflow:hidden;padding-top:10px;padding-bottom:calc(var(--padL,0px) + 2vh);--fs:24px;position:relative;touch-action:none;grid-column:1;grid-row:2}
 #left.free{position:fixed;z-index:1;padding:12px 14px 16px;background:rgba(0,0,0,.16);border-radius:14px;height:auto}
+/* rechter Rand: nur die Breite ändern (Schrift bleibt gleich) */
+#left{padding-right:16px}
+#leftW{position:absolute;top:0;right:0;bottom:48px;width:16px;z-index:2;cursor:ew-resize;touch-action:none}
+#leftW::after{content:'';position:absolute;top:50%;right:5px;width:5px;height:56px;margin-top:-28px;border-radius:3px;background:#ffe27a;opacity:.75}
 #leftRz{position:absolute;right:0;bottom:0;width:44px;height:44px;z-index:2;cursor:nwse-resize;border-radius:0 0 14px 0;background:linear-gradient(135deg,transparent 52%,#ffe27a 52%,#ffe27a 60%,transparent 60%,transparent 68%,#ffe27a 68%,#ffe27a 76%,transparent 76%);opacity:.75}
 /* Überschrift: immer 30 px, immer einzeilig oben links an derselben Stelle (bewegt sich nicht mit dem Tagesplan).
    Sie geht über die ganze Breite, damit auch lange Titel in eine Zeile passen. */
 #titleRow{grid-column:1 / -1;grid-row:1;display:flex;align-items:center;gap:16px;margin:0;min-width:0}
-#title{font-weight:700;margin:0;flex:0 1 auto;min-width:0;font-size:30px;line-height:1.2;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#title{font-weight:700;margin:0;flex:0 1 auto;min-width:0;font-size:34px;color:#ffe27a;line-height:1.2;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #pgNav{display:flex;align-items:center;gap:8px;flex:none;font-weight:700;font-size:20px}
 .pg{width:max(44px,1.9em);height:max(44px,1.9em);border-radius:50%;border:0;background:rgba(255,255,255,.18);color:#fff;font-size:1em;display:grid;place-items:center;padding:0}
 .pg:disabled{opacity:.3}
@@ -111,6 +115,8 @@ body:not(.sheet) #penbar,body.editing #penbar{display:none}
 #clockBox{position:fixed;left:4vw;bottom:3vh;background:#fff;color:#222;border-radius:12px;padding:8px 10px 7px;text-align:center;width:clamp(124px,max(10.5vw,15vmin),190px);box-shadow:0 8px 20px rgba(0,0,0,.3);z-index:3;cursor:move;touch-action:none}
 #clock{width:100%;display:block}
 #digital{font-weight:700;font-size:clamp(16px,max(1.4vw,2vmin),24px);margin-top:2px}
+#lend{margin-top:5px;padding-top:5px;border-top:1px solid #e3e3e3;font-size:clamp(12px,max(1vw,1.5vmin),15px);font-weight:600;color:#666;line-height:1.15}
+#lend b{display:block;color:#c0392b;font-size:1.35em;margin-top:1px}
 #timer{margin-top:6px;border-radius:10px;background:#5b5bd6;color:#fff;font-weight:700;font-size:clamp(17px,max(1.6vw,2.3vmin),28px);padding:4px 6px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;position:relative;overflow:hidden}
 #timer .bar{position:absolute;left:0;bottom:0;height:4px;background:#ffe27a}
 #timer.paused{background:#888}
@@ -180,11 +186,9 @@ body.standalone #mFull{display:none}
 @media (orientation:landscape){#clockBox{bottom:max(66px,calc(env(safe-area-inset-bottom) + 56px))}}
 
 /* Klassen-Maskottchen oben rechts (z. B. Mio bei 2a) – andere Elemente machen Platz */
-#mascot{position:fixed;top:max(2vh,env(safe-area-inset-top));right:max(2.5vw,env(safe-area-inset-right));height:clamp(110px,20vh,200px);width:auto;max-width:28vw;object-fit:contain;background:#fff;border-radius:14px;box-shadow:0 8px 20px rgba(0,0,0,.3);padding:6px;z-index:2;pointer-events:none}
+#mascot{flex:none;height:72px;width:auto;max-width:90px;object-fit:contain;background:#fff;border-radius:10px;box-shadow:0 6px 14px rgba(0,0,0,.3);padding:4px;pointer-events:none}
 /* freigestelltes Maskottchen: ohne weiße Karte, steht direkt auf der Tafel */
 #mascot.clear{background:none;box-shadow:none;border-radius:0;padding:0;filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))}
-body.mascot #titleRow{padding-right:calc(var(--mioW,0px) + 16px)}
-body.mascot #panel{padding-right:calc(var(--mioW,0px) + 1vw)}
 
 /* Tablet hochkant: Ablauf über die ganze Breite, unten Uhr + Info-Karte nebeneinander */
 @media (orientation:portrait){
@@ -194,16 +198,15 @@ body.mascot #panel{padding-right:calc(var(--mioW,0px) + 1vw)}
   #editor{width:min(660px,82vw)}
   #penbar{top:auto;transform:none;bottom:calc(max(10px,env(safe-area-inset-bottom)) + 52px);grid-template-columns:repeat(7,48px)}
   #penbar .sep{display:none}
-  body.mascot #panel{padding-right:0}
-  body.mascot #left:not(.free){margin-right:calc(var(--mioW,0px) + 1vw)}
 }
 </style>
 </head>
 <body>
 <div id="stage">
-  <div id="titleRow"><h1 id="title">Was liegt an?</h1><div id="pgNav" hidden><button class="pg" id="pgPrev" title="Vorherige Stunde">◀</button><span id="pgNum"></span><button class="pg" id="pgNext" title="Nächste Stunde">▶</button></div></div>
+  <div id="titleRow"><img id="mascot" alt="" hidden><h1 id="title">Was liegt an?</h1><div id="pgNav" hidden><button class="pg" id="pgPrev" title="Vorherige Stunde">◀</button><span id="pgNum"></span><button class="pg" id="pgNext" title="Nächste Stunde">▶</button></div></div>
   <section id="left">
     <ul id="agenda"></ul>
+    <div id="leftW" title="Nur die Breite ändern"></div>
     <div id="leftRz" title="Zum Vergrößern/Verkleinern ziehen"></div>
   </section>
   <section id="right">
@@ -212,8 +215,6 @@ body.mascot #panel{padding-right:calc(var(--mioW,0px) + 1vw)}
     </div>
   </section>
 </div>
-
-<img id="mascot" alt="" hidden>
 
 <div id="sheet" hidden>
   <div id="sheetHead"><span class="grip" title="Zum Verschieben ziehen">⠿</span><div id="pages"></div><button class="hbtn" id="sMax" title="Groß / zurück">⤢</button><button class="hbtn" id="sClose" title="Blatt ausblenden">✕</button></div>
@@ -224,6 +225,7 @@ body.mascot #panel{padding-right:calc(var(--mioW,0px) + 1vw)}
 <div id="clockBox">
   <svg id="clock" viewBox="0 0 200 200" aria-hidden="true"></svg>
   <div id="digital">--:--</div>
+  <div id="lend" hidden>Stundenende<b id="lendT"></b></div>
   <div id="timer" hidden><span id="tval">0:00</span><button id="tstop" title="Timer beenden">✕</button><div class="bar" id="tbar"></div></div>
 </div>
 
@@ -457,17 +459,16 @@ function currentIndex(){
 function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
 const CHECK='<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="#16202a" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
-/* Klassen-Maskottchen: steht die Klasse im Titel und ist die Karte geladen, erscheint sie oben rechts */
+/* Klassen-Maskottchen: steht die Klasse im Titel und ist die Karte geladen, erscheint sie links vor der Überschrift */
 const MASCOTS=[{re:/(^|[^0-9a-zäöü])2\s?a(?![0-9a-zäöü])/i,card:'Mio'}];
 function renderMascot(){
-  const im=$('#mascot'),root=document.documentElement;
+  const im=$('#mascot');
   const m=MASCOTS.find(x=>x.re.test(P.title||'')),card=m?findCard(m.card):null;
-  document.body.classList.toggle('mascot',!!card);im.hidden=!card;
-  if(!card){root.style.removeProperty('--mioW');return}
-  const s=srcFor(card,0),setW=()=>root.style.setProperty('--mioW',im.offsetWidth+'px');
+  im.hidden=!card;if(!card)return;
+  const s=srcFor(card,0);
   im.classList.toggle('clear',s.startsWith('data:image/png'));
-  if(im.getAttribute('src')!==s){im.onload=()=>{setW();fitLeft();if(P.info.length)fitInfo()};im.src=s}
-  else if(im.complete)setW();
+  // Titelzeile wird höher, sobald das Bild da ist -> Tagesplan neu einpassen
+  if(im.getAttribute('src')!==s){im.onload=()=>{fitLeft();if(P.info.length)fitInfo()};im.src=s}
 }
 function renderAgenda(){
   $('#title').textContent=P.title;
@@ -639,17 +640,19 @@ function layoutClock(){
 })();
 // Ablauf: irgendwo ziehen = verschieben, gelbe Ecke = Größe. Kurzes Antippen bleibt ein normaler Tipp.
 (function leftMoves(){
-  const L=$('#left'),rz=$('#leftRz');let m=null,dragged=0;
+  const L=$('#left'),rz=$('#leftRz'),wz=$('#leftW');let m=null,dragged=0;
   L.addEventListener('pointerdown',e=>{
     if(e.pointerType==='mouse'&&e.button!==0)return;
-    m={t:e.target===rz?'size':'move',id:e.pointerId,x0:e.clientX,y0:e.clientY,r:L.getBoundingClientRect(),fs0:S.planFs||24,on:false};
-    if(m.t==='size')e.preventDefault();
+    m={t:e.target===rz?'size':e.target===wz?'width':'move',id:e.pointerId,x0:e.clientX,y0:e.clientY,r:L.getBoundingClientRect(),fs0:S.planFs||24,on:false};
+    if(m.t!=='move')e.preventDefault();
   });
   addEventListener('pointermove',e=>{
     if(!m||e.pointerId!==m.id)return;
     const dx=e.clientX-m.x0,dy=e.clientY-m.y0,r=m.r,iw=innerWidth,ih=innerHeight;
-    if(!m.on){if(Math.hypot(dx,dy)<(m.t==='size'?3:10))return;m.on=true;try{L.setPointerCapture(m.id)}catch(_){}}
+    if(!m.on){if(Math.hypot(dx,dy)<(m.t==='move'?10:3))return;m.on=true;try{L.setPointerCapture(m.id)}catch(_){}}
     if(m.t==='move'){S.leftBox={x:(r.left+dx)/iw,y:(r.top+dy)/ih,w:r.width/iw};layoutLeftBox()}
+    // rechter Rand: nur breiter/schmaler, Schriftgröße bleibt
+    else if(m.t==='width'){S.leftBox={x:r.left/iw,y:r.top/ih,w:Math.max(200,r.width+dx)/iw};fitLeft()}
     // Ecke: Rahmen breiter/schmaler, Schrift wächst/schrumpft im gleichen Verhältnis
     else{const w=Math.max(200,r.width+dx);S.leftBox={x:r.left/iw,y:r.top/ih,w:w/iw};S.planFs=Math.round(clamp(m.fs0*w/r.width,12,64)*10)/10;fitLeft()}
   });
@@ -850,12 +853,23 @@ $('#bClear').onclick=()=>confirmTap($('#bClear'),()=>{if(!shown)return;pushUndo(
   s+='<line id="hH" x1="100" y1="100" x2="100" y2="52" stroke="#222" stroke-width="6" stroke-linecap="round"/><line id="hM" x1="100" y1="100" x2="100" y2="24" stroke="#222" stroke-width="4" stroke-linecap="round"/><line id="hS" x1="100" y1="112" x2="100" y2="20" stroke="#e53935" stroke-width="1.8"/><circle cx="100" cy="100" r="5" fill="#222"/>';
   $('#clock').innerHTML=s;
 })();
+/* Stundenende unter der Uhr: immer das nächste Ende; nach dem letzten wird nichts angezeigt */
+const LESSON_ENDS=['08:30','09:30','10:35','11:25','12:30'];
+let lastEnd;
+function showLessonEnd(d){
+  const now=d.getHours()*60+d.getMinutes();
+  const e=LESSON_ENDS.find(t=>{const [h,m]=t.split(':').map(Number);return h*60+m>now})||null;
+  if(e===lastEnd)return;lastEnd=e;
+  $('#lend').hidden=!e;if(e)$('#lendT').textContent=e+' Uhr';
+  if(typeof fitLeft==='function'&&P)fitLeft(); // Uhr wird höher/niedriger
+}
 function tickClock(){
   const d=new Date(),h=d.getHours(),m=d.getMinutes(),sec=d.getSeconds();
   $('#hH').setAttribute('transform',`rotate(${(h%12)*30+m*.5} 100 100)`);
   $('#hM').setAttribute('transform',`rotate(${m*6+sec*.1} 100 100)`);
   $('#hS').setAttribute('transform',`rotate(${sec*6} 100 100)`);
   $('#digital').textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+  showLessonEnd(d);
   tickTimer();
 }
 

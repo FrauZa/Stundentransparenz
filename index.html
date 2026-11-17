@@ -36,7 +36,7 @@ button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparen
 /* Überschrift: immer 30 px, immer einzeilig oben links an derselben Stelle (bewegt sich nicht mit dem Tagesplan).
    Sie geht über die ganze Breite, damit auch lange Titel in eine Zeile passen. */
 #titleRow{grid-column:1 / -1;grid-row:1;display:flex;align-items:center;justify-content:center;gap:16px;margin:0;min-width:0}
-#title{font-weight:700;margin:0;flex:0 1 auto;min-width:0;font-size:34px;color:#d9dee2;line-height:1.2;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#title{font-weight:700;margin:0;flex:0 1 auto;min-width:0;font-size:36px;color:#d9dee2;line-height:1.2;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #pgNav{display:flex;align-items:center;gap:8px;flex:none;font-weight:700;font-size:20px}
 .pg{width:max(44px,1.9em);height:max(44px,1.9em);border-radius:50%;border:0;background:rgba(255,255,255,.18);color:#fff;font-size:1em;display:grid;place-items:center;padding:0}
 .pg:disabled{opacity:.3}
@@ -189,7 +189,7 @@ body.standalone #mFull{display:none}
 @media (orientation:landscape){#clockBox{bottom:max(66px,calc(env(safe-area-inset-bottom) + 56px))}}
 
 /* Klassen-Maskottchen oben rechts (z. B. Mio bei 2a) – andere Elemente machen Platz */
-#mascot{flex:none;height:72px;width:auto;max-width:90px;object-fit:contain;background:#fff;border-radius:10px;box-shadow:0 6px 14px rgba(0,0,0,.3);padding:4px;pointer-events:none}
+#mascot{flex:none;height:110px;width:auto;max-width:140px;object-fit:contain;background:#fff;border-radius:10px;box-shadow:0 6px 14px rgba(0,0,0,.3);padding:4px;pointer-events:none}
 /* freigestelltes Maskottchen: ohne weiße Karte, steht direkt auf der Tafel */
 #mascot.clear{background:none;box-shadow:none;border-radius:0;padding:0;filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))}
 

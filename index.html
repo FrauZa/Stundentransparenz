@@ -122,6 +122,20 @@ body:not(.sheet) #penbar,body.editing #penbar{display:none}
 #menu{position:fixed;right:12px;bottom:10px;display:flex;gap:6px;opacity:.45;transition:opacity .2s;z-index:6}
 #menu:hover,#menu:focus-within{opacity:1}
 #menu button{height:42px;border-radius:10px;border:0;background:rgba(0,0,0,.35);color:#fff;font-weight:700;font-size:15px;padding:0 12px}
+
+/* Timer stellen */
+#tdlg{position:fixed;inset:0;z-index:25;background:rgba(0,0,0,.45);display:grid;place-items:center}
+.tdbox{background:#fff;color:#1b1b1b;border-radius:18px;padding:20px 22px;width:min(440px,92vw);box-shadow:0 20px 50px rgba(0,0,0,.45);text-align:center}
+.tdh{font-weight:700;font-size:22px;margin-bottom:12px}
+.tdset{display:flex;align-items:center;justify-content:center;gap:18px;font-size:30px;font-weight:600}
+.tdset b{font-size:56px;display:inline-block;min-width:1.4em}
+.tdb{width:64px;height:64px;border-radius:50%;border:0;background:#eef0f2;font-size:34px;font-weight:700;color:#2e5545}
+.tdpre{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0}
+.tdpre button{height:52px;border-radius:12px;border:2px solid #cfd6cf;background:#fff;font-size:20px;font-weight:700;color:#2e5545}
+.tdpre button.on{background:#2e5545;border-color:#2e5545;color:#fff}
+.tdact{display:flex;gap:10px}
+.tdact button{flex:1;height:56px;border-radius:12px;font-size:19px;font-weight:700;border:2px solid #2e5545;background:#fff;color:#2e5545}
+#tdStart{background:#2e5545;color:#fff}
 #menu button.armed{background:#e53935}
 body.editing #menu{display:none}
 
@@ -161,6 +175,9 @@ body.editing #menu{display:none}
 #penbar{right:max(12px,env(safe-area-inset-right))}
 #clockBox{bottom:max(3vh,env(safe-area-inset-bottom))}
 body.standalone #mFull{display:none}
+
+/* quer: Uhr steht unten in der rechten Hälfte – über der Menüleiste, damit sie keine Knöpfe verdeckt */
+@media (orientation:landscape){#clockBox{bottom:max(66px,calc(env(safe-area-inset-bottom) + 56px))}}
 
 /* Klassen-Maskottchen oben rechts (z. B. Mio bei 2a) – andere Elemente machen Platz */
 #mascot{position:fixed;top:max(2vh,env(safe-area-inset-top));right:max(2.5vw,env(safe-area-inset-right));height:clamp(110px,20vh,200px);width:auto;max-width:28vw;object-fit:contain;background:#fff;border-radius:14px;box-shadow:0 8px 20px rgba(0,0,0,.3);padding:6px;z-index:2;pointer-events:none}
@@ -228,6 +245,8 @@ body.mascot #panel{padding-right:calc(var(--mioW,0px) + 1vw)}
 </div>
 
 <div id="menu">
+  <button id="mCam">📷 Kamera</button>
+  <button id="mTimer">⏱ Timer</button>
   <button id="mSheet">📝 Blatt</button>
   <button id="mEdit">✏️ Planen</button>
   <button id="mReset">↺ Häkchen</button>
@@ -249,7 +268,7 @@ body.mascot #panel{padding-right:calc(var(--mioW,0px) + 1vw)}
       <li><code>&gt; Text</code> = Info-Karte rechts – Farbwörter (rot, gelb, grün …) werden farbig</li>
       <li><code>Titel: …</code> = Überschrift. <b>Jede weitere <code>Titel:</code>-Zeile beginnt eine neue Stunde</b> (eigene Seite, blättern mit ◀ ▶). Auch <code>---</code> beginnt eine neue Seite.</li>
     </ul>
-    <span class="muted">In der Ansicht: Kästchen antippen = erledigt · Punkt antippen = nach vorne holen · Pfeiltaste → oder Presenter = nächster Punkt · „📝 Blatt“ blendet das Blatt mit Stiften ein – oben am Balken verschieben, an der gelben Ecke größer/kleiner ziehen · Bilder mit Strg+V oder 📷 einfügen · Info-Karte und Uhr lassen sich verschieben, die Info-Karte an ihrer Ecke auch größer/kleiner ziehen.</span>
+    <span class="muted">In der Ansicht: Kästchen antippen = erledigt · Punkt antippen = nach vorne holen · Pfeiltaste → oder Presenter = nächster Punkt · Uhr antippen oder „⏱ Timer“ = Timer stellen · „📷 Kamera“ = Foto aufnehmen und mit dem Stift darauf schreiben ·„📝 Blatt“ blendet das Blatt mit Stiften ein – oben am Balken verschieben, an der gelben Ecke größer/kleiner ziehen · Bilder mit Strg+V oder 📷 einfügen · Info-Karte und Uhr lassen sich verschieben, die Info-Karte an ihrer Ecke auch größer/kleiner ziehen.</span>
   </details>
 
   <h3>Meine Stunden</h3>
@@ -280,6 +299,16 @@ body.mascot #panel{padding-right:calc(var(--mioW,0px) + 1vw)}
 
 <div id="toast"></div>
 <input type="file" id="fileImg" accept="image/*" multiple hidden>
+<input type="file" id="fileCam" accept="image/*" capture="environment" hidden>
+
+<div id="tdlg" hidden>
+  <div class="tdbox" role="dialog" aria-label="Timer stellen">
+    <div class="tdh">Timer stellen</div>
+    <div class="tdset"><button class="tdb" data-d="-1" aria-label="eine Minute weniger">−</button><span><b id="tdMin">5</b> min</span><button class="tdb" data-d="1" aria-label="eine Minute mehr">+</button></div>
+    <div class="tdpre"></div>
+    <div class="tdact"><button id="tdCancel">Abbrechen</button><button id="tdStart">▶ Start</button></div>
+  </div>
+</div>
 <input type="file" id="fileLesson" accept=".json,application/json" hidden>
 <input type="file" id="fileCards" accept="image/*" multiple hidden>
 
@@ -506,7 +535,7 @@ function fitLeft(){
   const portrait=innerHeight>=innerWidth;
   // quer: Uhr steht unten in der rechten Hälfte -> rechts unten Platz lassen, links volle Höhe
   stage.style.setProperty('--padL','0px');
-  stage.style.setProperty('--padR',(S.clock||portrait?0:ch+innerHeight*.03)+'px');
+  stage.style.setProperty('--padR',(S.clock||portrait?0:ch+66+12-innerHeight*.03)+'px');
   stage.style.setProperty('--clockW',(S.clock?0:cw)+'px');
   // hochkant: untere Zeile für Uhr und Info-Karte (Karte rechts neben der Uhr)
   stage.style.setProperty('--botH',(!portrait?0:S.clock?(P.info.length?Math.round(innerHeight*.22):0):Math.round(Math.max(ch,P.info.length?innerHeight*.22:0)))+'px');
@@ -648,6 +677,7 @@ $('#pgPrev').onclick=()=>goStd(-1);$('#pgNext').onclick=()=>goStd(1);
   const up=e=>{
     if(!m||e.pointerId!==m.id)return;
     if(m.on){const r=box.getBoundingClientRect();S.clock={x:r.left/innerWidth,y:r.top/innerHeight};fitLeft();save()}
+    else openTimerDlg(); // kurz auf die Uhr tippen = Timer stellen
     m=null;
   };
   box.addEventListener('pointerup',up);box.addEventListener('pointercancel',up);
@@ -677,6 +707,13 @@ document.addEventListener('paste',e=>{
 document.addEventListener('dragover',e=>e.preventDefault());
 document.addEventListener('drop',e=>{e.preventDefault();[...(e.dataTransfer?.files||[])].filter(f=>f.type.startsWith('image/')).forEach(addImageFile)});
 $('#fileImg').onchange=e=>{[...e.target.files].forEach(addImageFile);e.target.value=''};
+// Kamera: Foto aufnehmen -> neue Seite im Blatt, groß, sofort mit Stift/Pencil bearbeitbar
+$('#mCam').onclick=()=>$('#fileCam').click();
+$('#fileCam').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  const n=S.pages.length;await addImageFile(f);
+  if(S.pages.length>n){if(!S.sheet.max)toggleMax();setTool('pen')}
+};
 
 /* ---------- Zeichnen ---------- */
 const board=$('#board'),ink=$('#ink'),ctx=ink.getContext('2d');
@@ -823,6 +860,19 @@ function tickClock(){
 let T=null,AC=null;
 function ensureAudio(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume()}catch(_){}}
 function beep(){if(!AC)return;try{const t0=AC.currentTime;for(let i=0;i<3;i++){const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=880;o.connect(g);g.connect(AC.destination);const t=t0+i*.4;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.25,t+.03);g.gain.exponentialRampToValueAtTime(.001,t+.35);o.start(t);o.stop(t+.36)}}catch(_){}}
+/* Timer stellen (Uhr antippen oder „⏱ Timer“) */
+const TPRE=[1,2,3,5,10,15,20,30];
+let tdMin=5;
+function showTdMin(){$('#tdMin').textContent=tdMin;document.querySelectorAll('.tdpre button').forEach(b=>b.classList.toggle('on',+b.dataset.m===tdMin))}
+TPRE.forEach(n=>{const b=el('button',null,String(n));b.dataset.m=n;b.onclick=()=>{tdMin=n;showTdMin()};$('.tdpre').append(b)});
+document.querySelectorAll('.tdb').forEach(b=>b.onclick=()=>{tdMin=Math.min(90,Math.max(1,tdMin+(+b.dataset.d)));showTdMin()});
+function openTimerDlg(){tdMin=S.tmin||5;showTdMin();$('#tdlg').hidden=false}
+function closeTimerDlg(){$('#tdlg').hidden=true}
+function startFromDlg(){S.tmin=tdMin;save();closeTimerDlg();startTimer(tdMin)}
+$('#mTimer').onclick=openTimerDlg;
+$('#tdStart').onclick=startFromDlg;
+$('#tdCancel').onclick=closeTimerDlg;
+$('#tdlg').addEventListener('click',e=>{if(e.target.id==='tdlg')closeTimerDlg()});
 function startTimer(min){ensureAudio();T={total:min*60000,end:Date.now()+min*60000,left:min*60000,running:true,rung:false};$('#timer').hidden=false;tickTimer();fitLeft();toast('Timer: '+min+' Minuten')}
 function tickTimer(){
   if(!T)return;const t=$('#timer');
@@ -949,6 +999,7 @@ $('#fileLesson').onchange=async e=>{
 
 /* ---------- Tastatur ---------- */
 document.addEventListener('keydown',e=>{
+  if(!$('#tdlg').hidden){if(e.key==='Escape')closeTimerDlg();else if(e.key==='Enter'){e.preventDefault();startFromDlg()}return}
   if(ed.classList.contains('open')||(e.target.matches&&e.target.matches('input,textarea')))return;
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undoInk();return}
   if(e.ctrlKey||e.metaKey||e.altKey)return;

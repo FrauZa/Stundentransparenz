@@ -234,7 +234,7 @@ body.standalone #mFull{display:none}
       <li><code>(EA)</code> <code>(PA)</code> <code>(GA)</code> <code>(Kreis)</code> <code>(Plenum)</code> <code>(leise)</code> = Sozialform</li>
       <li><code>10 min</code> = Zeit – in der Ansicht antippen startet den Timer</li>
       <li><code>[Bild 1]</code> = Bild 1 erscheint automatisch, wenn der Punkt dran ist</li>
-      <li>Bildkarten erscheinen automatisch, wenn ein passendes Wort in der Zeile steht. <code>[Karte Buch]</code> = genau diese Karte · <code>[Karte]</code> = keine Karte · Karten: <span id="cardList"></span></li>
+      <li><code>[Buch] S. 12</code> = Bildkarte „Buch“ (nur mit eckigen Klammern; gibt es die Karte nicht, bleibt das Feld leer) · <code>[Buch 2]</code> = Karte für Klasse 2 · Karten: <span id="cardList"></span></li>
       <li><code>&gt; Text</code> = Info-Karte rechts – Farbwörter (rot, gelb, grün …) werden farbig</li>
       <li><code>Titel: …</code> = Überschrift. <b>Jede weitere <code>Titel:</code>-Zeile beginnt eine neue Stunde</b> (eigene Seite, blättern mit ◀ ▶). Auch <code>---</code> beginnt eine neue Seite.</li>
     </ul>
@@ -264,7 +264,7 @@ body.standalone #mFull{display:none}
     <span class="muted" id="cardCount"></span>
   </div>
   <div id="cardGrid"></div>
-  <p class="muted">Die Karten bleiben nur auf diesem Gerät, nichts wird hochgeladen. Mehrere Bilder auf einmal auswählen geht. Eine Karte mit gleichem Namen wird ersetzt. Neue Karte: Der Dateiname ist das Stichwort, z. B. „Sitzkreis.png“ erscheint bei „Sitzkreis“. Eine Zahl hinten (z. B. „B_2.png“) bedeutet Klasse 2: Sie erscheint, wenn im Titel der Stunde die Klasse steht (z. B. „Titel: Mathe 2b“). Auf dem iPad bitte in der App vom Home-Bildschirm laden, nicht in Safari.</p>
+  <p class="muted">Die Karten bleiben nur auf diesem Gerät, nichts wird hochgeladen. Mehrere Bilder auf einmal auswählen geht. Eine Karte mit gleichem Namen wird ersetzt. Neue Karte: Der Dateiname ist der Name, z. B. „Sitzkreis.png“ erscheint bei [Sitzkreis]. Eine Zahl hinten (z. B. „B_2.png“) bedeutet Klasse 2: Sie erscheint, wenn im Titel der Stunde die Klasse steht (z. B. „Titel: Mathe 2b“). Auf dem iPad bitte in der App vom Home-Bildschirm laden, nicht in Safari.</p>
 </aside>
 
 <div id="toast"></div>
@@ -312,32 +312,30 @@ function save(){clearTimeout(saveT);saveT=setTimeout(()=>DB.set('current',S),400
 /* ---------- Stichpunkte lesen ---------- */
 const SOZ={ea:['👤','Einzelarbeit'],pa:['👥','Partnerarbeit'],ga:['👨‍👩‍👧','Gruppenarbeit'],kreis:['⭕','Sitzkreis'],sitzkreis:['⭕','Sitzkreis'],plenum:['🗣️','Alle zusammen'],alle:['🗣️','Alle zusammen'],leise:['🤫','Leise arbeiten']};
 /* ---------- Bildkarten: werden auf dem Gerät geladen und nur dort gespeichert ---------- */
-// Bekannte Karten (über den Dateinamen erkannt) mit ihren Stichwörtern. Reihenfolge zählt: die erste passende gewinnt.
-// l = Zeile klein, nur Buchstaben/Ziffern, mit Leerzeichen am Rand
+// Eine Karte erscheint NUR, wenn ihr Name in eckigen Klammern in der Zeile steht: „[Buch] S. 12“.
+// Bekannte Karten (über den Dateinamen erkannt) mit weiteren Namen, unter denen man sie in [ ] aufrufen kann.
 const RULES=[
-  {id:'ha-zeigen',n:'HA zeigen',files:['haz'],a:['haz','hausaufgabenzeigen'],t:l=>/ ha |hausaufgab/.test(l)&&/zeig|kontroll|besprech|vergleich/.test(l)},
-  {id:'ha-eintragen',n:'HA eintragen',files:['ha'],a:['ha','hausaufgaben','hausaufgabe'],t:l=>/ ha |hausaufgab/.test(l)},
-  {id:'fehler-verbessern',n:'Fehler verbessern',files:['fv'],a:['fv','fehler','verbessern'],t:l=>/fehler|verbesser|berichtig/.test(l)},
-  {id:'kopfrechnen',n:'Kopfrechnen',files:['kr'],a:['kr'],t:l=>/kopfrechn|blitzrechn/.test(l)},
-  {id:'postmappe',n:'Postmappe',files:['p'],a:['p','post'],t:l=>/postmappe| post /.test(l)},
-  {id:'mappe',n:'Mappe',files:['mappe'],a:[],t:l=>/mappe/.test(l)},
-  {id:'uebungsheft',n:'Übungsheft',files:['anuki'],a:['anuki'],t:l=>/übungsheft|uebungsheft|anuki/.test(l)},
-  {id:'rechenheft',n:'Rechenheft',files:['rechenheft'],a:[],t:l=>/rechenheft/.test(l)},
-  {id:'ab',n:'AB',files:['ab'],a:['arbeitsblatt'],t:l=>/ ab |arbeitsbl/.test(l)},
-  {id:'ah',n:'AH',files:['ah'],a:['arbeitsheft'],t:l=>/ ah |arbeitsheft/.test(l)},
-  {id:'buch',n:'Buch',files:['b'],a:['b','mathebuch'],t:l=>/mathebuch| buch /.test(l)},
-  {id:'t',n:'T',files:['t'],a:['trainingsheft','th'],t:l=>/(^ |[^0-9] )t |trainingsheft/.test(l)},
-  // „A S. 7“ ja, „Nr. 3 a“ nein (Buchstabe direkt nach einer Zahl = Teilaufgabe)
-  {id:'a',n:'A',files:['a'],a:['richtigrechnen','rr'],t:l=>/(^ |[^0-9] )a |richtig rechnen/.test(l)},
-  {id:'stationen',n:'Stationen',files:['stationen'],a:['station'],t:l=>/station/.test(l)},
-  {id:'ea',n:'EA',files:['ea'],a:['einzelarbeit'],s:'ea',t:l=>/einzelarbeit|stillarbeit/.test(l)},
-  {id:'pa',n:'PA',files:['pa'],a:['partnerarbeit'],s:'pa',t:l=>/partnerarbeit/.test(l)},
-  {id:'pa2',n:'PA2',files:['pa2'],pre:'geminigeneratedimage',a:['partnerarbeit2'],t:()=>false}
+  {id:'ha-zeigen',n:'HA zeigen',files:['haz'],a:['haz','hausaufgabenzeigen']},
+  {id:'ha-eintragen',n:'HA eintragen',files:['ha'],a:['ha','hausaufgaben','hausaufgabe']},
+  {id:'fehler-verbessern',n:'Fehler verbessern',files:['fv'],a:['fv','fehler','verbessern']},
+  {id:'kopfrechnen',n:'Kopfrechnen',files:['kr'],a:['kr']},
+  {id:'postmappe',n:'Postmappe',files:['p'],a:['p','post']},
+  {id:'mappe',n:'Mappe',files:['mappe'],a:[]},
+  {id:'uebungsheft',n:'Übungsheft',files:['anuki'],a:['anuki']},
+  {id:'rechenheft',n:'Rechenheft',files:['rechenheft'],a:[]},
+  {id:'ab',n:'AB',files:['ab'],a:['arbeitsblatt']},
+  {id:'ah',n:'AH',files:['ah'],a:['arbeitsheft']},
+  {id:'buch',n:'Buch',files:['b'],a:['b','mathebuch']},
+  {id:'t',n:'T',files:['t'],a:['trainingsheft','th']},
+  {id:'a',n:'A',files:['a'],a:['richtigrechnen','rr']},
+  {id:'stationen',n:'Stationen',files:['stationen'],a:['station']},
+  {id:'ea',n:'EA',files:['ea'],a:['einzelarbeit']},
+  {id:'pa',n:'PA',files:['pa'],a:['partnerarbeit']},
+  {id:'pa2',n:'PA2',files:['pa2'],pre:'geminigeneratedimage',a:['partnerarbeit2']}
 ];
 const norm=s=>s.toLowerCase().replace(/[^a-zäöüß0-9]/g,'');
-const words=s=>s.toLowerCase().replace(/[^a-zäöüß0-9]+/g,' ').trim();
 // CARDSTORE: gespeicherte Bilder, id -> {id,base,cls,n,file,src}. cls = Klasse (B_2.png -> Buch, Klasse 2), 0 = ohne.
-// CARDS: aktive Karten mit Regeln; jede hat srcs {0|1|2…: Bild}
+// CARDS: aktive Karten; jede hat srcs {0|1|2…: Bild}
 let CARDS=[],CARDSTORE={};
 // Dateiname -> bekannte Karte oder neue Karte (Dateiname = Name = Stichwort; Nummer vorne wie „3_“ wird ignoriert, „_2“ hinten = Klasse 2)
 function cardFromFile(fname){
@@ -352,36 +350,37 @@ function buildCards(){
   const groups={};
   Object.values(CARDSTORE).forEach(c=>{(groups[c.base]||(groups[c.base]={n:c.n,srcs:{}})).srcs[c.cls]=c.src});
   const known=RULES.filter(r=>groups[r.id]).map(r=>({...r,srcs:groups[r.id].srcs}));
-  const custom=Object.keys(groups).filter(b=>b.startsWith('c:')).map(b=>{
-    const g=groups[b],w=words(g.n);return {id:b,n:g.n,a:[],srcs:g.srcs,t:l=>w.length>3?l.includes(w):l.includes(' '+w+' ')};
-  }).sort((a,b)=>a.n.localeCompare(b.n,'de'));
+  const custom=Object.keys(groups).filter(b=>b.startsWith('c:')).map(b=>({id:b,n:groups[b].n,a:[],srcs:groups[b].srcs}))
+    .sort((a,b)=>a.n.localeCompare(b.n,'de'));
   CARDS=[...known,...custom];
 }
-function findCard(name){const k=norm(name);return CARDS.find(c=>norm(c.id.replace(/^c:/,''))===k||norm(c.n)===k||c.a.includes(k))||null}
+function findCard(name){const k=norm(name);return k?CARDS.find(c=>norm(c.id.replace(/^c:/,''))===k||norm(c.n)===k||c.a.includes(k))||null:null}
+// Name aus [ ] -> {card, cls}. „Buch 2“ = Buch-Karte für Klasse 2. Gibt es keine Karte, bleibt das Feld leer.
+function lookupCard(name){
+  let card=findCard(name);if(card)return {card,cls:null};
+  const m=name.match(/^(.*?)[\s_]*(\d)$/);if(m&&(card=findCard(m[1])))return {card,cls:+m[2]};
+  return null;
+}
 // Klasse einer Stunde aus dem Titel: „Mathe 2b“, „Klasse 1“, „Kl. 2“ (nicht „2. Stunde“)
 const classOf=t=>{const m=(t||'').match(/(?:klasse|kl\.?)\s*([1-9])|(?:^|\s)([1-9])\s?[a-e]?(?=\s|$)/i);return m?+(m[1]||m[2]):0};
 // passendes Bild: Klasse -> ohne Nummer -> kleinste vorhandene Klasse
 function srcFor(card,cls){const s=card.srcs;return s[cls]||s[0]||s[Math.min(...Object.keys(s).map(Number))]}
-function autoCard(label,soz){
-  const l=' '+label.toLowerCase().replace(/[^a-zäöüß0-9]+/g,' ')+' ';
-  return CARDS.find(c=>c.t(l))||CARDS.find(c=>c.s&&soz.includes(c.s))||null;
-}
 const EMOJI_RE=/^(\p{Extended_Pictographic}(?:️|\p{Emoji_Modifier}|‍\p{Extended_Pictographic})*)\s*/u;
 function parseItem(line){
-  let s=line,icon=null,dur=null,bild=null,soz=[],karte=null;
+  let s=line,icon=null,dur=null,bild=null,soz=[],found=null;
   const em=s.match(EMOJI_RE);if(em){icon=em[1];s=s.slice(em[0].length)}
-  s=s.replace(/\[\s*karte\s*([^\]]*)\]/i,(m,n)=>{karte=n.trim();return ' '});
+  // [Bild 1] = Seite 1 im Blatt (wie bisher)
   s=s.replace(/\[\s*bild\s*(\d*)\s*\]/i,(m,n)=>{bild=n?+n:1;return ' '});
+  // [Karte Buch] = Karte, das Wort verschwindet aus dem Text
+  s=s.replace(/\[\s*karte\s*([^\]]*)\]/i,(m,n)=>{if(!found)found=lookupCard(n.trim())||false;return ' '});
+  // [Buch] = Karte „Buch“, das Wort bleibt im Text stehen (ohne Klammern)
+  // („[Buch 2] S. 12“ zeigt „Buch S. 12“ – die Klassennummer steht nicht im Text)
+  s=s.replace(/\[([^\]]*)\]/g,(m,n)=>{n=n.trim();if(found==null){found=lookupCard(n)||false;if(found&&found.cls!=null)n=n.replace(/[\s_]*\d$/,'')}return n});
   s=s.replace(/\((EA|PA|GA|Kreis|Sitzkreis|Plenum|Alle|leise)\)/gi,(m,k)=>{soz.push(k.toLowerCase());return ' '});
   s=s.replace(/(^|\s)(\d{1,3})\s*(?:minuten|min\.?|')(?=\s|$)/i,(m,a,n)=>{dur=+n;return ' '});
   const label=s.replace(/\s{2,}/g,' ').trim();
-  // [Karte X] = gezielt, [Karte] = keine; eigenes Emoji am Anfang = keine automatische Karte.
-  // Ohne passende Karte bleibt der Platz leer (keine automatischen Emojis).
-  // [Karte B 2] = Buch-Karte für Klasse 2 (sonst entscheidet die Klasse im Titel der Stunde)
-  let card=null,cardCls=null;
-  if(karte!==null){if(karte){card=findCard(karte);if(!card){const m=karte.match(/^(.*?)[\s_]*(\d)$/);if(m){card=findCard(m[1]);if(card)cardCls=+m[2]}}}}
-  else if(!icon)card=autoCard(label,soz);
-  return {label,icon,card,cardCls,dur,bild,soz,tasks:[]};
+  // Ohne [ ] oder ohne passende Karte bleibt das Feld leer. Klasse: aus „[Buch 2]“, sonst aus dem Titel der Stunde.
+  return {label,icon,card:found?found.card:null,cardCls:found?found.cls:null,dur,bild,soz,tasks:[]};
 }
 // Ein Plan kann mehrere Stunden (Seiten) enthalten: jede „Titel:“-Zeile oder „---“ beginnt eine neue Seite
 function parse(text){

@@ -181,6 +181,8 @@ body.standalone #mFull{display:none}
 
 /* Klassen-Maskottchen oben rechts (z. B. Mio bei 2a) – andere Elemente machen Platz */
 #mascot{position:fixed;top:max(2vh,env(safe-area-inset-top));right:max(2.5vw,env(safe-area-inset-right));height:clamp(110px,20vh,200px);width:auto;max-width:28vw;object-fit:contain;background:#fff;border-radius:14px;box-shadow:0 8px 20px rgba(0,0,0,.3);padding:6px;z-index:2;pointer-events:none}
+/* freigestelltes Maskottchen: ohne weiße Karte, steht direkt auf der Tafel */
+#mascot.clear{background:none;box-shadow:none;border-radius:0;padding:0;filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))}
 body.mascot #titleRow{padding-right:calc(var(--mioW,0px) + 16px)}
 body.mascot #panel{padding-right:calc(var(--mioW,0px) + 1vw)}
 
@@ -463,6 +465,7 @@ function renderMascot(){
   document.body.classList.toggle('mascot',!!card);im.hidden=!card;
   if(!card){root.style.removeProperty('--mioW');return}
   const s=srcFor(card,0),setW=()=>root.style.setProperty('--mioW',im.offsetWidth+'px');
+  im.classList.toggle('clear',s.startsWith('data:image/png'));
   if(im.getAttribute('src')!==s){im.onload=()=>{setW();fitLeft();if(P.info.length)fitInfo()};im.src=s}
   else if(im.complete)setW();
 }
@@ -896,11 +899,26 @@ function confirmTap(btn,fn,label){
 $('#mReset').onclick=()=>confirmTap($('#mReset'),()=>{S.done={};S.focus=null;lastCur=-2;render();save()},'Alle Häkchen weg? Nochmal tippen');
 const isIOS=/iPad|iPhone/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 function fullTip(){toast(isIOS?'iPad: Safari-Menü (aA bzw. ☰ in der Adressleiste) → „Symbolleiste ausblenden“ – oder die Seite über Teilen → „Zum Home-Bildschirm“ öffnen.':'Vollbild geht hier nicht – im Browser F11 drücken.')}
-$('#mFull').onclick=()=>{const d=document,de=d.documentElement;try{
-  if(d.fullscreenElement||d.webkitFullscreenElement){(d.exitFullscreen||d.webkitExitFullscreen).call(d);return}
-  const req=de.requestFullscreen||de.webkitRequestFullscreen;if(!req){fullTip();return}
-  const r=req.call(de);if(r&&r.catch)r.catch(fullTip);
-}catch(_){fullTip()}};
+/* Vollbild: bleibt an, bis man wieder auf „Vollbild“ tippt.
+   - Esc beendet es nicht mehr (Chrome/Edge: Tastensperre; zum Notausstieg Esc lange gedrückt halten)
+   - beendet der Browser es trotzdem (z. B. Datei-/Kamera-Auswahl), geht es beim nächsten Tippen wieder an */
+const isFull=()=>!!(document.fullscreenElement||document.webkitFullscreenElement);
+let wantFull=false;
+function enterFull(quiet){
+  const de=document.documentElement,req=de.requestFullscreen||de.webkitRequestFullscreen;
+  if(!req){if(!quiet)fullTip();return}
+  try{const r=req.call(de);if(r&&r.then)r.then(lockEsc,()=>{if(!quiet)fullTip()});else lockEsc()}catch(_){if(!quiet)fullTip()}
+}
+function lockEsc(){try{if(navigator.keyboard&&navigator.keyboard.lock)navigator.keyboard.lock(['Escape']).catch(()=>{})}catch(_){}}
+function showFull(){$('#mFull').textContent=isFull()?'⛶ Vollbild beenden':'⛶ Vollbild'}
+$('#mFull').onclick=()=>{
+  if(isFull()){wantFull=false;try{navigator.keyboard&&navigator.keyboard.unlock&&navigator.keyboard.unlock()}catch(_){}
+    (document.exitFullscreen||document.webkitExitFullscreen).call(document);showFull();return}
+  wantFull=true;enterFull(false);
+};
+['fullscreenchange','webkitfullscreenchange'].forEach(t=>document.addEventListener(t,showFull));
+// ungewollt beendet -> beim nächsten Tippen/Klicken wieder Vollbild (braucht eine Berührung, sonst erlaubt es der Browser nicht)
+addEventListener('pointerup',e=>{if(wantFull&&!isFull()&&!e.target.closest('#mFull,input,textarea'))enterFull(true)},true);
 const ed=$('#editor'),src=$('#src');
 /* Meine Karten: laden, anzeigen, entfernen (alles nur auf diesem Gerät) */
 function renderCards(){
@@ -927,9 +945,15 @@ async function addCardFiles(files){
       await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url});
       const k=Math.min(1,560/img.naturalWidth),w=Math.round(img.naturalWidth*k),h=Math.round(img.naturalHeight*k);
       const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');
-      x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(img,0,0,w,h);URL.revokeObjectURL(url);
+      x.drawImage(img,0,0,w,h);URL.revokeObjectURL(url);
+      // freigestellte Bilder (durchsichtiger Hintergrund, z. B. Mio.png) bleiben durchsichtig -> PNG;
+      // alle anderen auf Weiß und als kleineres JPEG speichern
+      let clear=false;try{const d=x.getImageData(0,0,w,h).data;for(let i=3;i<d.length;i+=4)if(d[i]<250){clear=true;break}}catch(_){}
+      let data;
+      if(clear)data=c.toDataURL('image/png');
+      else{x.globalCompositeOperation='destination-over';x.fillStyle='#fff';x.fillRect(0,0,w,h);data=c.toDataURL('image/jpeg',0.85)}
       const info=cardFromFile(file.name);
-      CARDSTORE[info.id]={...info,file:file.name,src:c.toDataURL('image/jpeg',0.85)};ok++;
+      CARDSTORE[info.id]={...info,file:file.name,src:data};ok++;
     }catch(_){}
   }
   const saved=await DB.set('cards',CARDSTORE);

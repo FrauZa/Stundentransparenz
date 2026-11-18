@@ -223,11 +223,13 @@ button.chip.mus.on{background:#ffe27a;color:#3a3200}
 #awin.full #aframe{border-radius:0}
 #awin.full #aRz{display:none}
 #aQr{font-size:15px;padding:0 10px}
-#qrdlg{position:fixed;inset:0;z-index:26;background:rgba(0,0,0,.6);display:grid;place-items:center;padding:12px}
-#qrcard{background:#fff;color:#1b1b1b;border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:18px 22px 16px;text-align:center;position:relative;max-width:96vw}
-#qrname{font-size:clamp(24px,4.5vmin,44px);font-weight:800;margin:0 48px 8px;line-height:1.15}
-#qrimg svg{display:block;width:min(70vh,82vw);height:min(70vh,82vw);margin:0 auto}
-#qrurl{font-size:15px;color:#666;margin-top:8px;word-break:break-all}
+/* QR-Code: frei verschiebbar (überall anfassen), an der Ecke größer/kleiner ziehen */
+#qrdlg{position:fixed;z-index:26;left:0;top:0}
+#qrcard{background:#fff;color:#1b1b1b;border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:14px 18px 16px;text-align:center;position:relative;cursor:move;touch-action:none;-webkit-user-select:none;user-select:none}
+#qrname{font-size:var(--qf,40px);font-weight:800;margin:0 46px 8px;line-height:1.15;overflow-wrap:anywhere}
+#qrimg svg{display:block;width:100%;height:auto;margin:0 auto}
+#qrurl{font-size:max(11px,calc(var(--qf,40px)*.36));color:#666;margin-top:6px;word-break:break-all}
+#qrRz{position:absolute;right:-4px;bottom:-4px;width:46px;height:46px;cursor:nwse-resize;touch-action:none;border-radius:0 0 22px 0;background:linear-gradient(135deg,transparent 52%,#8f959b 52%,#8f959b 60%,transparent 60%,transparent 68%,#8f959b 68%,#8f959b 76%,transparent 76%)}
 /* Startbildschirm einer Stunde: Foto der Klasse + Begrüßung; antippen = Unterricht wie gewohnt */
 #start{position:fixed;inset:0;z-index:5;background:#2f5a43;cursor:pointer;overflow:hidden;-webkit-user-select:none;user-select:none}
 #stImg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -245,7 +247,7 @@ button.chip.mus.on{background:#ffe27a;color:#3a3200}
 #stNext{right:max(12px,env(safe-area-inset-right))}
 body.startpg #clockBox,body.startpg #sheet,body.startpg #penbar{visibility:hidden}
 #start.nofoto #stFoto{opacity:1;background:#ffe27a;color:#3a3200;font-size:18px;height:52px}
-#qrClose{position:absolute;right:12px;top:12px;width:46px;height:46px;border-radius:12px;border:0;background:#eef0f2;font-size:20px;font-weight:700;color:#333}
+#qrClose{position:absolute;right:10px;top:10px;width:46px;height:46px;border-radius:12px;border:0;background:#eef0f2;font-size:20px;font-weight:700;color:#333}
 #menu button.armed{background:#e53935}
 body.editing #menu{display:none}
 
@@ -481,7 +483,7 @@ body.standalone #mFull{display:none}
   <div id="aRz" title="Zum Vergrößern ziehen"></div>
 </div>
 <div id="qrdlg" hidden>
-  <div id="qrcard"><button id="qrClose" title="Schließen">✕</button><div id="qrname"></div><div id="qrimg"></div><div id="qrurl"></div></div>
+  <div id="qrcard"><button id="qrClose" title="Schließen">✕</button><div id="qrname"></div><div id="qrimg"></div><div id="qrurl"></div><div id="qrRz" title="Zum Vergrößern/Verkleinern ziehen"></div></div>
 </div>
 <div id="start" hidden>
   <img id="stImg" alt="" hidden><div id="stShade"></div>
@@ -1600,10 +1602,40 @@ function showQr(a){
   for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+='M'+(c+M)+' '+(r+M)+'h1v1h-1z';
   $('#qrimg').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+W+'" shape-rendering="crispEdges"><rect width="'+W+'" height="'+W+'" fill="#fff"/><path d="'+d+'" fill="#000"/></svg>';
   $('#qrname').textContent=a.name;$('#qrurl').textContent=a.url.replace(/^https?:\/\//,'').replace(/\/$/,'');
-  $('#qrdlg').hidden=false;
+  $('#qrdlg').hidden=false;layoutQr();
 }
 function closeQr(){$('#qrdlg').hidden=true}
-$('#qrdlg').onclick=closeQr;   // irgendwo hintippen schließt
+$('#qrClose').onclick=closeQr;
+// Größe und Ort merken (als Anteil vom Bildschirm), damit der QR-Code beim nächsten Mal wieder dort ist
+function layoutQr(){
+  const box=$('#qrdlg'),card=$('#qrcard');if(box.hidden)return;
+  const VW=innerWidth,VH=innerHeight,b=S.qbox||{};
+  const max=Math.max(200,Math.min(VW-8,VH-150)); // passt immer ganz auf den Bildschirm
+  const w=Math.round(clamp(b.w?b.w*VW:Math.min(VH*.7,VW*.82),200,max));
+  card.style.width=w+'px';card.style.setProperty('--qf',Math.round(clamp(w*.075,18,48))+'px');
+  const h=card.offsetHeight;
+  box.style.left=clamp(b.x!=null?b.x*VW:(VW-w)/2,0,VW-w)+'px';
+  box.style.top=clamp(b.y!=null?b.y*VH:(VH-h)/2,0,VH-h)+'px';
+}
+(function qrMoves(){
+  const box=$('#qrdlg'),card=$('#qrcard'),rz=$('#qrRz');let m=null;
+  card.addEventListener('pointerdown',e=>{
+    if(e.target.closest('button')||e.target===rz)return;
+    m={t:'move',id:e.pointerId,x0:e.clientX,y0:e.clientY,r:card.getBoundingClientRect()};card.setPointerCapture(e.pointerId);e.preventDefault();
+  });
+  rz.addEventListener('pointerdown',e=>{
+    m={t:'size',id:e.pointerId,x0:e.clientX,y0:e.clientY,r:card.getBoundingClientRect()};rz.setPointerCapture(e.pointerId);e.preventDefault();e.stopPropagation();
+  });
+  const move=e=>{
+    if(!m||e.pointerId!==m.id)return;
+    const dx=e.clientX-m.x0,dy=e.clientY-m.y0,r=m.r,iw=innerWidth,ih=innerHeight;
+    if(m.t==='move')S.qbox={x:(r.left+dx)/iw,y:(r.top+dy)/ih,w:r.width/iw};
+    else S.qbox={x:r.left/iw,y:r.top/ih,w:Math.max(200,r.width+Math.max(dx,dy))/iw}; // quadratisch: stärkere Richtung zählt
+    layoutQr();
+  };
+  const up=e=>{if(m&&e.pointerId===m.id){m=null;const r=card.getBoundingClientRect();S.qbox={x:r.left/innerWidth,y:r.top/innerHeight,w:r.width/innerWidth};save()}};
+  [card,rz].forEach(x=>{x.addEventListener('pointermove',move);x.addEventListener('pointerup',up);x.addEventListener('pointercancel',up)});
+})();
 // App-Fenster: wie Blatt/Video verschiebbar und an der Ecke größer ziehbar
 function layoutApp(){
   const win=$('#awin');if(win.hidden)return;
@@ -1876,7 +1908,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
 
 /* ---------- Start ---------- */
 function render(){PLAN=parse(S.text);S.std=Math.min(Math.max(S.std||0,0),PLAN.length-1);P=PLAN[S.std];renderAgenda();renderRight();renderStart()}
-let rT;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{render();layoutBig();layoutVideo();layoutApp()},80)});
+let rT;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{render();layoutBig();layoutVideo();layoutApp();layoutQr()},80)});
 (async()=>{
   CARDSTORE=(await DB.get('cards'))||{};buildCards();renderCards();
   const saved=await DB.get('current');

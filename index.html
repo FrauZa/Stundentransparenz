@@ -228,6 +228,18 @@ button.chip.mus.on{background:#ffe27a;color:#3a3200}
 #qrname{font-size:clamp(24px,4.5vmin,44px);font-weight:800;margin:0 48px 8px;line-height:1.15}
 #qrimg svg{display:block;width:min(70vh,82vw);height:min(70vh,82vw);margin:0 auto}
 #qrurl{font-size:15px;color:#666;margin-top:8px;word-break:break-all}
+/* Startbildschirm einer Stunde: Foto der Klasse + Begrüßung; antippen = Unterricht wie gewohnt */
+#start{position:fixed;inset:0;z-index:15;background:#2f5a43;cursor:pointer;overflow:hidden;-webkit-user-select:none;user-select:none}
+#stImg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#stShade{position:absolute;left:0;right:0;bottom:0;height:55%;background:linear-gradient(transparent,rgba(0,0,0,.62))}
+#start.nofoto #stShade{display:none}
+#stText{position:absolute;left:0;right:0;bottom:max(7vh,env(safe-area-inset-bottom));padding:0 5vw;text-align:center;color:#fff;text-shadow:0 3px 18px rgba(0,0,0,.55)}
+#start.nofoto #stText{bottom:auto;top:50%;transform:translateY(-50%)}
+#stGreet{font-size:clamp(40px,7.5vmin,120px);font-weight:800;line-height:1.08;overflow-wrap:anywhere}
+#stDate{font-size:clamp(20px,3.4vmin,46px);font-weight:600;margin-top:1.4vh;opacity:.95}
+#stFoto{position:absolute;right:max(14px,env(safe-area-inset-right));top:max(14px,env(safe-area-inset-top));height:44px;border-radius:12px;border:0;padding:0 14px;background:rgba(0,0,0,.35);color:#fff;font-size:15px;font-weight:700;opacity:.55}
+#stFoto:hover{opacity:1}
+#start.nofoto #stFoto{opacity:1;background:#ffe27a;color:#3a3200;font-size:18px;height:52px}
 #qrClose{position:absolute;right:12px;top:12px;width:46px;height:46px;border-radius:12px;border:0;background:#eef0f2;font-size:20px;font-weight:700;color:#333}
 #menu button.armed{background:#e53935}
 body.editing #menu{display:none}
@@ -379,6 +391,7 @@ body.standalone #mFull{display:none}
       <li><code>[Musik Aufräumlied]</code> = Musik-Knopf an diesem Punkt (spielt das Lied „Aufräumlied“; die Lieder laden Sie unten rechts über „🎵 Musik“)</li>
       <li><code>[Video Igel]</code> = Video-Knopf an diesem Punkt (öffnet das Video „Igel“; Videos laden Sie unten rechts über „🎬 Video“)</li>
       <li><code>[App Mal und Geteilt]</code> = App-Knopf an diesem Punkt (öffnet die App) · <code>[QR Mal und Geteilt]</code> = zeigt gleich den großen QR-Code zum Scannen (Ihre Apps stehen unten rechts unter „🧮 Apps“)</li>
+      <li><code>Start: Guten Morgen, 2a!</code> = die Stunde beginnt mit einem Startbildschirm (Foto + dieser Text). Antippen → Unterricht wie gewohnt. Das Foto wählen Sie auf dem Startbildschirm oben rechts; es gilt für die Klasse im Titel. <code>Start: Hallo! [Ausflug]</code> = eigenes Foto „Ausflug“</li>
       <li><code>&gt; Text</code> = Info-Karte rechts – Farbwörter (rot, gelb, grün …) werden farbig</li>
       <li><code>Titel: …</code> = Überschrift. <b>Jede weitere <code>Titel:</code>-Zeile beginnt eine neue Stunde</b> (eigene Seite, blättern mit ◀ ▶). Auch <code>---</code> beginnt eine neue Seite.</li>
     </ul>
@@ -465,6 +478,12 @@ body.standalone #mFull{display:none}
 <div id="qrdlg" hidden>
   <div id="qrcard"><button id="qrClose" title="Schließen">✕</button><div id="qrname"></div><div id="qrimg"></div><div id="qrurl"></div></div>
 </div>
+<div id="start" hidden>
+  <img id="stImg" alt="" hidden><div id="stShade"></div>
+  <div id="stText"><div id="stGreet"></div><div id="stDate"></div></div>
+  <button id="stFoto" title="Foto für diesen Startbildschirm auswählen">🖼 Foto ändern</button>
+</div>
+<input type="file" id="fileStart" accept="image/*" hidden>
 <input type="file" id="fileVideo" accept="video/*,.mp4,.mov,.m4v,.webm" multiple hidden>
 <input type="file" id="fileMusic" accept="audio/*,.mp3,.m4a,.wav,.aac" multiple hidden>
 <input type="file" id="fileLesson" accept=".json,application/json" hidden>
@@ -601,6 +620,9 @@ function parse(text){
     if(t){if(!out||out.titled||out.items.length||out.info.length)newPage(t[1].trim());else{out.title=t[1].trim();out.titled=true}continue}
     if(!out)newPage();
     if(line.startsWith('>')){out.info.push(line.slice(1).trim());continue}
+    // „Start: Guten Morgen, 2a!“ = Startbildschirm für diese Stunde ([Name] = eigenes Foto)
+    const st=line.match(/^start\s*(?::\s*(.*))?$/i);
+    if(st){let txt=(st[1]||'').trim(),foto='';txt=txt.replace(/\[([^\]]*)\]/,(m,n)=>{foto=n.trim();return ' '}).replace(/\s{2,}/g,' ').trim();out.start={text:txt,foto};continue}
     line=line.replace(/^(?:[-*•–·▪◦‣\uF0B7\uF0A7\uF0D8\uF076]|->|→|o(?=\t))\s*/,'');
     if(!line)continue;
     if(indented&&out.items.length){out.items[out.items.length-1].tasks.push(line);continue}
@@ -717,7 +739,7 @@ function toggleDone(i){
 }
 // Presenter/Pfeiltasten: alles abgehakt -> nächste Stunde; nichts abgehakt -> vorherige
 function checkCurrent(){const c=currentIndex();if(c>=0)toggleDone(c);else goStd(1)}
-function uncheckLast(){let best=-1,t=0;P.items.forEach((_,i)=>{const v=S.done[dkey(i)];if(v&&v>=t){t=v;best=i}});if(best>=0){delete S.done[dkey(best)];S.focus=null;render();save()}else goStd(-1)}
+function uncheckLast(){let best=-1,t=0;P.items.forEach((_,i)=>{const v=S.done[dkey(i)];if(v&&v>=t){t=v;best=i}});if(best>=0){delete S.done[dkey(best)];S.focus=null;render();save()}else if(P.start&&S.startOff&&S.startOff[startKey()]){delete S.startOff[startKey()];render();save()}else goStd(-1)}
 function layoutLeftBox(){
   const L=$('#left'),b=S.leftBox;
   L.classList.toggle('free',!!b);
@@ -1634,13 +1656,60 @@ $('#apForm').onsubmit=e=>{
 };
 addEventListener('pointerdown',e=>{if(!$('#apanel').hidden&&!e.target.closest('#apanel,#mApps,.chip.appc'))closeAppPanel()},true);
 
+/* ---------- Startbildschirm: „Start: …“ im Plan ---------- */
+// Erscheint, solange in der Stunde noch nichts abgehakt ist und er nicht weggetippt wurde.
+// Fotos bleiben nur auf diesem Gerät (Kinderfotos gehören nicht ins Internet).
+const startKey=()=>(S.std||0)+'|'+(P.title||'');
+const classKey=t=>{const m=(t||'').match(/(?:^|[^0-9a-zäöü])([1-9])\s?([a-e])(?![0-9a-zäöü])/i);return m?(m[1]+m[2]).toLowerCase():''};
+// welches Foto: [Name] aus der Start-Zeile, sonst die Klasse aus dem Titel (2a), sonst der Titel
+function fotoKey(){const st=P.start||{};if(st.foto)return 'n:'+norm(st.foto);const k=classKey(P.title);return k?'k:'+k:'t:'+norm(P.title||'')}
+const FOTOS={};   // key -> Adresse (oder null = keins)
+async function getFoto(k){if(!(k in FOTOS))FOTOS[k]=(await DB.get('sfoto:'+k))||null;return FOTOS[k]}
+function startVisible(){return !!(P.start&&!(S.startOff&&S.startOff[startKey()])&&!P.items.some((_,i)=>isDone(i)))}
+function renderStart(){
+  const box=$('#start');
+  if(!startVisible()){box.hidden=true;return}
+  const st=P.start,k=classKey(P.title);
+  $('#stGreet').textContent=st.text||('Guten Morgen'+(k?', '+k:'')+'!');
+  tickStart();box.hidden=false;
+  const fk=fotoKey();box.dataset.k=fk;
+  getFoto(fk).then(u=>{
+    if(box.dataset.k!==fk)return;
+    const im=$('#stImg');
+    if(u){if(im.getAttribute('src')!==u)im.src=u;im.hidden=false}else{im.hidden=true;im.removeAttribute('src')}
+    box.classList.toggle('nofoto',!u);$('#stFoto').textContent=u?'🖼 Foto ändern':'🖼 Foto auswählen';
+  });
+}
+function tickStart(){
+  const d=new Date();
+  $('#stDate').textContent=d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'})+' · '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+' Uhr';
+}
+setInterval(()=>{if(!$('#start').hidden)tickStart()},5000);
+function hideStart(){(S.startOff||(S.startOff={}))[startKey()]=true;$('#start').hidden=true;save()}
+$('#start').addEventListener('click',e=>{if(!e.target.closest('#stFoto'))hideStart()});
+$('#stFoto').onclick=e=>{e.stopPropagation();$('#fileStart').click()};
+$('#fileStart').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  const fk=fotoKey();
+  try{
+    const url=URL.createObjectURL(f),img=new Image();
+    await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url});
+    // für den ganzen Bildschirm groß genug, aber nicht riesig (Speicher)
+    const k=Math.min(1,2400/Math.max(img.naturalWidth,img.naturalHeight)),w=Math.round(img.naturalWidth*k),h=Math.round(img.naturalHeight*k);
+    const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);URL.revokeObjectURL(url);
+    const data=c.toDataURL('image/jpeg',0.85);
+    if(!await DB.set('sfoto:'+fk,data)){toast('Speichern ging nicht – ist der Speicher voll?');return}
+    FOTOS[fk]=data;renderStart();toast('Foto gespeichert');
+  }catch(_){toast('Das Foto ließ sich nicht öffnen.')}
+};
+
 /* ---------- Menü & Planen ---------- */
 function confirmTap(btn,fn,label){
   if(btn.dataset.armed){clearTimeout(+btn.dataset.armed);delete btn.dataset.armed;btn.classList.remove('armed');if(btn.dataset.orig!=null){btn.textContent=btn.dataset.orig}fn();return}
   btn.dataset.orig=btn.textContent;btn.textContent=label||'Sicher? Nochmal tippen';btn.classList.add('armed');
   btn.dataset.armed=setTimeout(()=>{delete btn.dataset.armed;btn.classList.remove('armed');btn.textContent=btn.dataset.orig},3000);
 }
-$('#mReset').onclick=()=>confirmTap($('#mReset'),()=>{S.done={};S.focus=null;lastCur=-2;render();save()},'Alle Häkchen weg? Nochmal tippen');
+$('#mReset').onclick=()=>confirmTap($('#mReset'),()=>{S.done={};S.startOff={};S.focus=null;lastCur=-2;render();save()},'Alle Häkchen weg? Nochmal tippen');
 const isIOS=/iPad|iPhone/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 function fullTip(){toast(isIOS?'iPad: Safari-Menü (aA bzw. ☰ in der Adressleiste) → „Symbolleiste ausblenden“ – oder die Seite über Teilen → „Zum Home-Bildschirm“ öffnen.':'Vollbild geht hier nicht – im Browser F11 drücken.')}
 /* Vollbild: bleibt an, bis man wieder auf „Vollbild“ tippt.
@@ -1770,6 +1839,8 @@ $('#fileLesson').onchange=async e=>{
 document.addEventListener('keydown',e=>{
   if(!$('#tdlg').hidden){if(e.key==='Escape')closeTimerDlg();else if(e.key==='Enter'){e.preventDefault();startFromDlg()}return}
   if(ed.classList.contains('open')||(e.target.matches&&e.target.matches('input,textarea')))return;
+  // Startbildschirm: weiter (→, Leertaste, Enter, Esc) = Unterricht zeigen, ← = vorige Stunde
+  if(!$('#start').hidden&&!e.ctrlKey&&!e.metaKey&&!e.altKey){if(['ArrowRight',' ','PageDown','Enter','Escape'].includes(e.key)){e.preventDefault();hideStart()}else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();goStd(-1)}return}
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undoInk();return}
   if(e.ctrlKey||e.metaKey||e.altKey)return;
   if(['ArrowRight',' ','PageDown','Enter'].includes(e.key)){e.preventDefault();checkCurrent()}
@@ -1789,7 +1860,7 @@ if(navigator.standalone||matchMedia('(display-mode: standalone)').matches||match
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 
 /* ---------- Start ---------- */
-function render(){PLAN=parse(S.text);S.std=Math.min(Math.max(S.std||0,0),PLAN.length-1);P=PLAN[S.std];renderAgenda();renderRight()}
+function render(){PLAN=parse(S.text);S.std=Math.min(Math.max(S.std||0,0),PLAN.length-1);P=PLAN[S.std];renderAgenda();renderRight();renderStart()}
 let rT;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{render();layoutBig();layoutVideo();layoutApp()},80)});
 (async()=>{
   CARDSTORE=(await DB.get('cards'))||{};buildCards();renderCards();

@@ -100,8 +100,19 @@ button.chip:active{transform:scale(.96)}
 #board{position:relative;background:#fff;border-radius:8px;overflow:hidden}
 #resize{position:absolute;right:-4px;bottom:-4px;width:46px;height:46px;cursor:nwse-resize;touch-action:none;border-radius:0 0 14px 0;background:linear-gradient(135deg,transparent 52%,#8f959b 52%,#8f959b 60%,transparent 60%,transparent 68%,#8f959b 68%,#8f959b 76%,transparent 76%)}
 #menu button.on{background:#ffe27a;color:#3a3200}
-#board.karo{background-image:linear-gradient(#c5dbf3 1px,transparent 1px),linear-gradient(90deg,#c5dbf3 1px,transparent 1px);background-size:var(--k) var(--k);background-position:-1px -1px}
+/* #zoom trägt Bild + Zeichnung; zwei Finger vergrößern/verschieben nur diese Ebene */
+#zoom{position:absolute;left:0;top:0;width:100%;height:100%;transform-origin:0 0;background:#fff}
+#zoom.karo{background-image:linear-gradient(#c5dbf3 1px,transparent 1px),linear-gradient(90deg,#c5dbf3 1px,transparent 1px);background-size:var(--k) var(--k);background-position:-1px -1px}
 #boardImg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;-webkit-user-drag:none}
+.hbtn.on{background:#ffe27a;color:#3a3200}
+#zReset{font-size:15px;padding:0 9px}
+/* Schloss: Blatt bleibt, wo es ist (nicht verschieben, nicht größer/kleiner ziehen) */
+#sheet.locked #sheetHead{cursor:default}
+#sheet.locked .grip{opacity:.2}
+#sheet.locked #resize,#sheet.full #resize{display:none}
+/* Vollbild fürs Blatt: ganzer Bildschirm, Stiftleiste bleibt sichtbar */
+#sheet.full{left:0!important;top:0!important;right:0;bottom:0;border-radius:0;background:#10181a;padding-top:env(safe-area-inset-top);box-shadow:none}
+body.sheetfull #menu,body.sheetfull #clockBox{display:none}
 #ink{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
 
 /* ---------- Stiftleiste ---------- */
@@ -126,6 +137,16 @@ body:not(.sheet) #penbar,body.editing #penbar{display:none}
 #timer.over{background:#e53935;animation:pulse 1s infinite}
 #timer button{border:0;background:rgba(255,255,255,.25);color:#fff;border-radius:6px;font-size:.6em;padding:2px 6px;font-weight:700}
 @keyframes pulse{50%{transform:scale(1.05)}}
+/* großer Kreis-Timer: verschiebbar, an der Ecke größer ziehbar, antippen = Pause */
+#bigT{position:fixed;z-index:5;background:#fff;color:#1b1b1b;border-radius:18px;box-shadow:0 14px 36px rgba(0,0,0,.45);padding:10px 10px 8px;cursor:move;touch-action:none;text-align:center}
+#btSvg{display:block;width:100%}
+#btLeft{font-weight:700;line-height:1.1;margin-top:2px}
+#btUntil{font-weight:600;color:#555;line-height:1.2}
+#bigT .bt{position:absolute;top:6px;width:42px;height:42px;border-radius:10px;border:0;background:#eef0f2;font-size:18px;font-weight:700;color:#333;padding:0}
+#btMin{left:6px}#btClose{right:6px}
+#btRz{position:absolute;right:0;bottom:0;width:42px;height:42px;cursor:nwse-resize;border-radius:0 0 18px 0;background:linear-gradient(135deg,transparent 52%,#8f959b 52%,#8f959b 60%,transparent 60%,transparent 68%,#8f959b 68%,#8f959b 76%,transparent 76%)}
+#bigT.over{animation:pulse 1s infinite}
+#bigT.over #btLeft{color:#e53935}
 
 /* ---------- Menü ---------- */
 #menu{position:fixed;right:12px;bottom:10px;display:flex;gap:6px;opacity:.45;transition:opacity .2s;z-index:6}
@@ -145,6 +166,31 @@ body:not(.sheet) #penbar,body.editing #penbar{display:none}
 .tdact{display:flex;gap:10px}
 .tdact button{flex:1;height:56px;border-radius:12px;font-size:19px;font-weight:700;border:2px solid #2e5545;background:#fff;color:#2e5545}
 #tdStart{background:#2e5545;color:#fff}
+.tdmode{display:flex;gap:4px;margin:0 0 16px;background:#eef0f2;border-radius:12px;padding:4px}
+.tdmode button{flex:1;height:46px;border:0;border-radius:9px;background:transparent;font-size:18px;font-weight:700;color:#2e5545}
+.tdmode button.on{background:#2e5545;color:#fff}
+#tdTime{font:700 46px 'Quicksand',system-ui,sans-serif;color:#1b1b1b;border:2px solid #cfd6cf;border-radius:12px;padding:0 8px;width:4.6em;height:72px;text-align:center;background:#fff;-webkit-user-select:text;user-select:text}
+.tdu{width:64px;height:64px;border-radius:50%;border:0;background:#eef0f2;font-size:19px;font-weight:700;color:#2e5545;flex:none}
+.tdcap{font-size:14px;font-weight:700;color:#777;margin:16px 0 -10px}
+#tdUntilBox{margin-bottom:18px}
+#tdUntilBox .tdpre{margin-bottom:0}
+/* Musik */
+#mpanel{position:fixed;right:max(12px,env(safe-area-inset-right));bottom:calc(max(10px,env(safe-area-inset-bottom)) + 52px);z-index:8;width:min(380px,92vw);max-height:70vh;display:flex;flex-direction:column;background:#fff;color:#1b1b1b;border-radius:16px;box-shadow:0 16px 44px rgba(0,0,0,.5);padding:12px}
+.mph{display:flex;align-items:center;justify-content:space-between;font-size:20px;font-weight:700;margin:0 0 8px 4px}
+.mph button{width:42px;height:42px;border-radius:10px;border:0;background:#eef0f2;font-size:18px;font-weight:700;color:#333}
+#mpList{list-style:none;margin:0;padding:0;overflow:auto;min-height:0}
+#mpList li{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+#mpList .muted{display:block;padding:6px 4px;line-height:1.4}
+.song{flex:1;min-width:0;height:52px;border-radius:12px;border:2px solid #cfd6cf;background:#fff;font-size:18px;font-weight:700;color:#2e5545;text-align:left;padding:0 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.song.on{background:#2e5545;color:#fff;border-color:#2e5545}
+.mpx{flex:none;width:44px;height:44px;border-radius:10px;border:0;background:#eef0f2;font-size:15px;font-weight:700;color:#555}
+.mpx.armed{background:#e53935;color:#fff}
+.mpact{display:flex;gap:8px;margin-top:6px}
+.mpact button{flex:1;height:48px;border-radius:12px;border:2px solid #2e5545;background:#fff;color:#2e5545;font-size:16px;font-weight:700;padding:0 6px}
+.mpact button.on{background:#ffe27a;border-color:#d9b93a;color:#3a3200}
+#mpStop{background:#2e5545;color:#fff}
+#mpStop:disabled{opacity:.35}
+button.chip.mus.on{background:#ffe27a;color:#3a3200}
 #menu button.armed{background:#e53935}
 body.editing #menu{display:none}
 
@@ -201,6 +247,7 @@ body.standalone #mFull{display:none}
   #editor{width:min(660px,82vw)}
   #penbar{top:auto;transform:none;bottom:calc(max(10px,env(safe-area-inset-bottom)) + 52px);grid-template-columns:repeat(7,48px)}
   #penbar .sep{display:none}
+  body.sheetfull #penbar{bottom:max(10px,env(safe-area-inset-bottom))}
 }
 </style>
 </head>
@@ -220,8 +267,8 @@ body.standalone #mFull{display:none}
 </div>
 
 <div id="sheet" hidden>
-  <div id="sheetHead"><span class="grip" title="Zum Verschieben ziehen">⠿</span><div id="pages"></div><button class="hbtn" id="sMax" title="Groß / zurück">⤢</button><button class="hbtn" id="sClose" title="Blatt ausblenden">✕</button></div>
-  <div id="board"><img id="boardImg" alt=""><canvas id="ink"></canvas></div>
+  <div id="sheetHead"><span class="grip" title="Zum Verschieben ziehen">⠿</span><div id="pages"></div><button class="hbtn" id="zReset" title="Zoom zurücksetzen" hidden>1:1</button><button class="hbtn" id="sLock" title="Blatt festmachen (nicht mehr verschiebbar)">🔓</button><button class="hbtn" id="sMax" title="Groß / zurück">⤢</button><button class="hbtn" id="sFull" title="Vollbild">⛶</button><button class="hbtn" id="sClose" title="Blatt ausblenden">✕</button></div>
+  <div id="board"><div id="zoom"><img id="boardImg" alt=""><canvas id="ink"></canvas></div></div>
   <div id="resize" title="Zum Vergrößern ziehen"></div>
 </div>
 
@@ -229,7 +276,16 @@ body.standalone #mFull{display:none}
   <svg id="clock" viewBox="0 0 200 200" aria-hidden="true"></svg>
   <div id="digital">--:--</div>
   <div id="lend" hidden>Stundenende<b id="lendT"></b></div>
-  <div id="timer" hidden><span id="tval">0:00</span><button id="tstop" title="Timer beenden">✕</button><div class="bar" id="tbar"></div></div>
+  <div id="timer" hidden><span id="tval">0:00</span><button id="tbig" title="Groß anzeigen">⤢</button><button id="tstop" title="Timer beenden">✕</button><div class="bar" id="tbar"></div></div>
+</div>
+
+<div id="bigT" hidden>
+  <svg id="btSvg" viewBox="0 0 200 200" aria-hidden="true"></svg>
+  <div id="btLeft">0:00</div>
+  <div id="btUntil"></div>
+  <button class="bt" id="btMin" title="Klein machen (Timer läuft weiter)">–</button>
+  <button class="bt" id="btClose" title="Timer beenden">✕</button>
+  <div id="btRz" title="Zum Vergrößern ziehen"></div>
 </div>
 
 <div id="penbar">
@@ -253,6 +309,7 @@ body.standalone #mFull{display:none}
 
 <div id="menu">
   <button id="mCam">📷 Kamera</button>
+  <button id="mMusic">🎵 Musik</button>
   <button id="mTimer">⏱ Timer</button>
   <button id="mSheet">📝 Blatt</button>
   <button id="mEdit">✏️ Planen</button>
@@ -272,6 +329,7 @@ body.standalone #mFull{display:none}
       <li><code>10 min</code> = Zeit – in der Ansicht antippen startet den Timer</li>
       <li><code>[Bild 1]</code> = Bild 1 erscheint automatisch, wenn der Punkt dran ist</li>
       <li><code>[Buch] S. 12</code> = Bildkarte „Buch“, angezeigt wird nur „S. 12“ (Bilder nur mit eckigen Klammern; gibt es die Karte nicht, bleibt das Feld leer) · <code>[Buch 2]</code> = Karte für Klasse 2 · Karten: <span id="cardList"></span></li>
+      <li><code>[Musik Aufräumlied]</code> = Musik-Knopf an diesem Punkt (spielt das Lied „Aufräumlied“; die Lieder laden Sie unten rechts über „🎵 Musik“)</li>
       <li><code>&gt; Text</code> = Info-Karte rechts – Farbwörter (rot, gelb, grün …) werden farbig</li>
       <li><code>Titel: …</code> = Überschrift. <b>Jede weitere <code>Titel:</code>-Zeile beginnt eine neue Stunde</b> (eigene Seite, blättern mit ◀ ▶). Auch <code>---</code> beginnt eine neue Seite.</li>
     </ul>
@@ -311,11 +369,26 @@ body.standalone #mFull{display:none}
 <div id="tdlg" hidden>
   <div class="tdbox" role="dialog" aria-label="Timer stellen">
     <div class="tdh">Timer stellen</div>
-    <div class="tdset"><button class="tdb" data-d="-1" aria-label="eine Minute weniger">−</button><span><b id="tdMin">5</b> min</span><button class="tdb" data-d="1" aria-label="eine Minute mehr">+</button></div>
-    <div class="tdpre"></div>
+    <div class="tdmode"><button data-mode="min" class="on">Minuten</button><button data-mode="until">bis Uhrzeit</button></div>
+    <div id="tdMinBox">
+      <div class="tdset"><button class="tdb" data-d="-1" aria-label="eine Minute weniger">−</button><span><b id="tdMin">5</b> min</span><button class="tdb" data-d="1" aria-label="eine Minute mehr">+</button></div>
+      <div class="tdpre" id="tdPreMin"></div>
+    </div>
+    <div id="tdUntilBox" hidden>
+      <div class="tdset"><button class="tdu" data-d="-5" aria-label="5 Minuten früher">−5</button><input type="time" id="tdTime" step="60"><button class="tdu" data-d="5" aria-label="5 Minuten später">+5</button></div>
+      <div class="tdcap" id="tdEndCap">Stundenende</div>
+      <div class="tdpre" id="tdPreEnd"></div>
+    </div>
     <div class="tdact"><button id="tdCancel">Abbrechen</button><button id="tdStart">▶ Start</button></div>
   </div>
 </div>
+<div id="mpanel" hidden>
+  <div class="mph"><span>🎵 Musik</span><button id="mpClose" title="Schließen">✕</button></div>
+  <ul id="mpList"></ul>
+  <div class="mpact"><button id="mpStop" disabled>■ Stopp</button><button id="mpLoop" title="Lied immer wieder von vorn spielen">🔁 Wiederholen</button></div>
+  <div class="mpact"><button id="mpLoad">＋ Musik laden</button></div>
+</div>
+<input type="file" id="fileMusic" accept="audio/*,.mp3,.m4a,.wav,.aac" multiple hidden>
 <input type="file" id="fileLesson" accept=".json,application/json" hidden>
 <input type="file" id="fileCards" accept="image/*" multiple hidden>
 
@@ -351,7 +424,8 @@ let lastCur=-2, shown=null;
 const DB={db:null,
   open(){if(this.db)return Promise.resolve(this.db);return new Promise((res,rej)=>{try{const r=indexedDB.open('stundentransparenz',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>{this.db=r.result;res(r.result)};r.onerror=()=>rej(r.error)}catch(e){rej(e)}})},
   async get(k){try{const db=await this.open();return await new Promise((res,rej)=>{const q=db.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}catch(e){return undefined}},
-  async set(k,v){try{const db=await this.open();await new Promise((res,rej)=>{const t=db.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error)});return true}catch(e){return false}}
+  async set(k,v){try{const db=await this.open();await new Promise((res,rej)=>{const t=db.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error)});return true}catch(e){return false}},
+  async del(k){try{const db=await this.open();await new Promise((res,rej)=>{const t=db.transaction('kv','readwrite');t.objectStore('kv').delete(k);t.oncomplete=res;t.onerror=()=>rej(t.error)});return true}catch(e){return false}}
 };
 let saveT=null;
 function save(){clearTimeout(saveT);saveT=setTimeout(()=>DB.set('current',S),400)}
@@ -414,8 +488,10 @@ const classOf=t=>{const m=(t||'').match(/(?:klasse|kl\.?)\s*([1-9])|(?:^|\s)([1-
 function srcFor(card,cls){const s=card.srcs;return s[cls]||s[0]||s[Math.min(...Object.keys(s).map(Number))]}
 const EMOJI_RE=/^(\p{Extended_Pictographic}(?:️|\p{Emoji_Modifier}|‍\p{Extended_Pictographic})*)\s*/u;
 function parseItem(line){
-  let s=line,icon=null,dur=null,bild=null,soz=[],found=null;
+  let s=line,icon=null,dur=null,bild=null,soz=[],found=null,music=null;
   const em=s.match(EMOJI_RE);if(em){icon=em[1];s=s.slice(em[0].length)}
+  // [Musik Aufräumlied] = Musik-Knopf an diesem Punkt (vor den Karten, sonst würde „Musik …“ als Karte gesucht)
+  s=s.replace(/\[\s*(?:musik|lied)\b\s*:?\s*([^\]]*)\]/i,(m,n)=>{music=n.trim();return ' '});
   // [Bild 1] = Seite 1 im Blatt (wie bisher)
   s=s.replace(/\[\s*bild\s*(\d*)\s*\]/i,(m,n)=>{bild=n?+n:1;return ' '});
   // [Karte Buch] = Karte, das Wort verschwindet aus dem Text
@@ -426,7 +502,7 @@ function parseItem(line){
   s=s.replace(/(^|\s)(\d{1,3})\s*(?:minuten|min\.?|')(?=\s|$)/i,(m,a,n)=>{dur=+n;return ' '});
   const label=s.replace(/\s{2,}/g,' ').trim();
   // Ohne [ ] oder ohne passende Karte bleibt das Feld leer. Klasse: aus „[Buch 2]“, sonst aus dem Titel der Stunde.
-  return {label,icon,card:found?found.card:null,cardCls:found?found.cls:null,dur,bild,soz,tasks:[]};
+  return {label,icon,card:found?found.card:null,cardCls:found?found.cls:null,dur,bild,soz,music,tasks:[]};
 }
 // Ein Plan kann mehrere Stunden (Seiten) enthalten: jede „Titel:“-Zeile oder „---“ beginnt eine neue Seite
 function parse(text){
@@ -535,6 +611,7 @@ function renderAgenda(){
     const meta=el('div','meta');
     it.soz.forEach(k=>{const z=SOZ[k];if(z)meta.append(el('span','chip',z[0]+' '+z[1]))});
     if(it.dur){const b=el('button','chip','⏱ '+it.dur+' min');b.title='Timer starten';b.onclick=e=>{e.stopPropagation();startTimer(it.dur)};meta.append(b)}
+    if(it.music!=null){const b=el('button','chip mus');b.dataset.song=it.music;b.title='Musik abspielen / stoppen';b.onclick=e=>{e.stopPropagation();playByName(it.music)};meta.append(b)}
     if(it.bild){const b=el('button','chip','🖼 Bild '+it.bild);b.onclick=e=>{e.stopPropagation();const p=S.pages[it.bild-1];if(p){S.view=p.id;S.sheet.on=true;renderSheet();save()}else toast('Bild '+it.bild+' gibt es noch nicht – Screenshot machen und Strg+V drücken.')};meta.append(b)}
     if(meta.children.length)body.append(meta);
     const chk=el('button','chk');chk.innerHTML=CHECK;chk.title='Erledigt';
@@ -543,6 +620,7 @@ function renderAgenda(){
     if(i===cur&&it.tasks.length){const tl=el('ul','tasks');it.tasks.forEach(t=>tl.append(el('li',null,t)));li.append(tl)}
     ul.append(li);
   });
+  musicChips();
   fitLeft();
 }
 function toggleDone(i){
@@ -599,6 +677,7 @@ function renderRight(){
 function renderSheet(){
   const on=!!S.sheet.on;
   $('#sheet').hidden=!on;document.body.classList.toggle('sheet',on);$('#mSheet').classList.toggle('on',on);
+  document.body.classList.toggle('sheetfull',on&&!!S.sheet.full);
   if(!on){shown=null;return}
   if(!S.pages.length)S.pages.push(newBlank('karo'));
   const page=S.pages.find(p=>p.id===S.view)||S.pages[0];
@@ -618,7 +697,7 @@ function renderSheet(){
   bar.append(a1,a2,a3);
   const img=$('#boardImg');
   if(page.img){if(img.getAttribute('src')!==page.img)img.src=page.img;img.hidden=false}else{img.hidden=true;img.removeAttribute('src')}
-  $('#board').classList.toggle('karo',!page.img&&page.bg==='karo');
+  $('#zoom').classList.toggle('karo',!page.img&&page.bg==='karo');
   layoutBoard();
 }
 function fitInfo(){
@@ -719,7 +798,7 @@ $('#pgPrev').onclick=()=>goStd(-1);$('#pgNext').onclick=()=>goStd(1);
   box.addEventListener('pointerup',up);box.addEventListener('pointercancel',up);
 })();
 function addBlank(bg){const p=newBlank(bg);S.pages.push(p);S.view=p.id;S.sheet.on=true;render();save();toast('Seite '+S.pages.length+' angelegt')}
-function deletePage(p){S.pages=S.pages.filter(q=>q!==p);delete UNDO[p.id];S.view='auto';render();save()}
+function deletePage(p){S.pages=S.pages.filter(q=>q!==p);delete UNDO[p.id];delete ZM[p.id];S.view='auto';render();save()}
 
 /* ---------- Bilder einfügen ---------- */
 async function addImageFile(file){
@@ -748,7 +827,7 @@ $('#mCam').onclick=()=>$('#fileCam').click();
 $('#fileCam').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
   const n=S.pages.length;await addImageFile(f);
-  if(S.pages.length>n){if(!S.sheet.max)toggleMax();setTool('pen')}
+  if(S.pages.length>n){if(!S.sheet.max&&!S.sheet.lock&&!S.sheet.full)toggleMax();setTool('pen')}
 };
 
 /* ---------- Zeichnen ---------- */
@@ -769,27 +848,85 @@ function sheetOrient(){
 function layoutBoard(){
   const p=shown;if(!p)return;
   sheetOrient();
-  const sh=S.sheet,asp=p.w/p.h,VW=innerWidth,VH=innerHeight;
-  let w=Math.max(240,sh.w*VW);
-  w=Math.min(w,VW-PADX-8,(VH-HEAD-24)*asp);       // passt immer auf den Bildschirm
-  let h=w/asp;
-  let x=Math.min(Math.max(0,sh.x*VW),VW-w-PADX), y=Math.min(Math.max(0,sh.y*VH),VH-h-HEAD-8);
-  w=Math.floor(w);h=Math.floor(h);
-  const box=$('#sheet');box.style.left=x+'px';box.style.top=y+'px';box.style.width=(w+PADX)+'px';
+  const sh=S.sheet,asp=p.w/p.h,VW=innerWidth,VH=innerHeight,box=$('#sheet');
+  box.classList.toggle('locked',!!sh.lock);box.classList.toggle('full',!!sh.full);
+  $('#sLock').textContent=sh.lock?'🔒':'🔓';$('#sLock').classList.toggle('on',!!sh.lock);
+  $('#sLock').title=sh.lock?'Blatt ist fest – antippen zum Lösen':'Blatt festmachen (nicht mehr verschiebbar)';
+  $('#sFull').classList.toggle('on',!!sh.full);$('#sFull').title=sh.full?'Vollbild beenden':'Vollbild';$('#sMax').hidden=!!sh.full;
+  let w,h;
+  if(sh.full){
+    // ganzer Bildschirm; Platz für die Stiftleiste lassen (quer: rechts, hochkant: unten)
+    const portrait=VH>=VW,top=parseFloat(getComputedStyle(box).paddingTop)||0;
+    const aw=VW-PADX-(portrait?0:140),ah=VH-top-HEAD-7-(portrait?140:0);
+    w=Math.floor(Math.min(aw,ah*asp));h=Math.floor(w/asp);
+    box.style.width=box.style.height='';
+    board.style.marginLeft=Math.max(0,Math.floor((aw-w)/2))+'px';board.style.marginTop=Math.max(0,Math.floor((ah-h)/2))+'px';
+  }else{
+    w=Math.max(240,sh.w*VW);
+    w=Math.min(w,VW-PADX-8,(VH-HEAD-24)*asp);       // passt immer auf den Bildschirm
+    h=w/asp;
+    const x=Math.min(Math.max(0,sh.x*VW),VW-w-PADX), y=Math.min(Math.max(0,sh.y*VH),VH-h-HEAD-8);
+    w=Math.floor(w);h=Math.floor(h);
+    box.style.left=x+'px';box.style.top=y+'px';box.style.width=(w+PADX)+'px';box.style.height='';board.style.marginLeft=board.style.marginTop='';
+  }
   board.style.width=w+'px';board.style.height=h+'px';board.style.setProperty('--k',(w/32)+'px');
-  const dpr=window.devicePixelRatio||1;
-  if(BW!==w||BH!==h||ink.width!==Math.round(w*dpr)){ink.width=Math.round(w*dpr);ink.height=Math.round(h*dpr)}
-  BW=w;BH=h;ctx.setTransform(dpr,0,0,dpr,0,0);drawAll();
+  BW=w;BH=h;applyZoom(true);
 }
+/* ---------- Zoomen mit zwei Fingern (am PC: Mausrad) ---------- */
+// pro Seite gemerkt (nur solange die App offen ist). x/y = Verschiebung als Anteil der Blattbreite/-höhe.
+const ZM={};
+function zoomOf(){const id=shown?shown.id:'-';return ZM[id]||(ZM[id]={s:1,x:0,y:0})}
+function applyZoom(hi){
+  const z=zoomOf();z.s=clamp(z.s,1,6);z.x=clamp(z.x,1-z.s,0);z.y=clamp(z.y,1-z.s,0);
+  $('#zoom').style.transform=z.s>1.001?`translate(${z.x*BW}px,${z.y*BH}px) scale(${z.s})`:'';
+  $('#zReset').hidden=z.s<=1.001;
+  if(hi)sizeInk();
+}
+// Zeichenfläche: beim Zoomen feiner auflösen, damit Striche scharf bleiben (Größengrenze fürs iPad beachten)
+function sizeInk(){
+  const dpr=window.devicePixelRatio||1,z=zoomOf();
+  const k=Math.max(1,Math.min(z.s,Math.sqrt(12e6/(BW*BH*dpr*dpr))));
+  const W=Math.round(BW*dpr*k),H=Math.round(BH*dpr*k);
+  if(ink.width!==W||ink.height!==H){ink.width=W;ink.height=H}
+  ctx.setTransform(W/BW,0,0,H/BH,0,0);drawAll();
+}
+const TOUCH=new Map();let pinch=null,wheelT;
+function boardPt(x,y){const r=board.getBoundingClientRect();return {x:x-r.left,y:y-r.top}}
+function pinchPair(){const [a,b]=[...TOUCH.values()];return {a,b,m:boardPt((a.x+b.x)/2,(a.y+b.y)/2),d:Math.hypot(a.x-b.x,a.y-b.y)}}
+function startPinch(){
+  const {m,d}=pinchPair(),z=zoomOf();
+  // Punkt auf dem Blatt, der zwischen den Fingern liegt – er bleibt beim Zoomen unter den Fingern
+  pinch={d0:Math.max(20,d),s0:z.s,cx:(m.x-z.x*BW)/z.s,cy:(m.y-z.y*BH)/z.s};
+}
+function movePinch(){
+  const {m,d}=pinchPair(),z=zoomOf();
+  z.s=clamp(pinch.s0*d/pinch.d0,1,6);z.x=(m.x-pinch.cx*z.s)/BW;z.y=(m.y-pinch.cy*z.s)/BH;applyZoom(false);
+}
+// zweiter Finger kommt dazu -> den gerade mit dem Finger begonnenen Strich zurücknehmen
+function cancelTouchStroke(){
+  if(!drawing||!drawing.touch||!shown)return;
+  const st=UNDO[shown.id];if(st&&st.length)shown.strokes=st.pop();
+  drawing=null;drawAll();
+}
+board.addEventListener('wheel',e=>{
+  if(!shown)return;e.preventDefault();
+  const z=zoomOf(),m=boardPt(e.clientX,e.clientY),cx=(m.x-z.x*BW)/z.s,cy=(m.y-z.y*BH)/z.s;
+  z.s=clamp(z.s*Math.exp(-e.deltaY*.0015),1,6);z.x=(m.x-cx*z.s)/BW;z.y=(m.y-cy*z.s)/BH;applyZoom(false);
+  clearTimeout(wheelT);wheelT=setTimeout(()=>applyZoom(true),200);
+},{passive:false});
+$('#zReset').onclick=()=>{if(shown)ZM[shown.id]={s:1,x:0,y:0};applyZoom(true)};
+// Safari: Zwei-Finger-Geste nie die ganze Seite vergrößern lassen (sonst „verrutscht“ alles)
+['gesturestart','gesturechange'].forEach(t=>document.addEventListener(t,e=>e.preventDefault()));
 // Verschieben am Kopf, Größe an der Ecke
 (function sheetMoves(){
   const head=$('#sheetHead'),rz=$('#resize');let m=null;
   head.addEventListener('pointerdown',e=>{
-    if(e.target.closest('button'))return;
+    if(e.target.closest('button')||S.sheet.lock||S.sheet.full)return; // festgemacht/Vollbild: nicht verschieben
     const r=$('#sheet').getBoundingClientRect();m={t:'move',id:e.pointerId,dx:e.clientX-r.left,dy:e.clientY-r.top};
     head.setPointerCapture(e.pointerId);e.preventDefault();
   });
   rz.addEventListener('pointerdown',e=>{
+    if(S.sheet.lock||S.sheet.full)return;
     m={t:'size',id:e.pointerId,x0:e.clientX,y0:e.clientY,w0:BW,h0:BH};rz.setPointerCapture(e.pointerId);e.preventDefault();
   });
   const move=e=>{
@@ -811,6 +948,9 @@ function toggleMax(){
   layoutBoard();save();
 }
 $('#sMax').onclick=toggleMax;
+$('#sLock').onclick=()=>{S.sheet.lock=!S.sheet.lock;layoutBoard();save();toast(S.sheet.lock?'🔒 Das Blatt ist festgemacht und verrutscht nicht mehr.':'🔓 Das Blatt lässt sich wieder verschieben.')};
+function setSheetFull(on){S.sheet.full=on;render();save()}
+$('#sFull').onclick=()=>setSheetFull(!S.sheet.full);
 $('#sClose').onclick=()=>{S.sheet.on=false;renderSheet();save()};
 $('#mSheet').onclick=()=>{S.sheet.on=!S.sheet.on;renderSheet();save()};
 const lw=(s,pr)=>s.s*BW/1000*(s.hl?1:(0.35+pr*1.3));
@@ -837,18 +977,26 @@ function eraseAt(p,q){
 }
 ink.addEventListener('pointerdown',e=>{
   if(e.pointerType==='pen')penSeen=true;
-  if(penSeen&&e.pointerType==='touch')return; // Handballen ignorieren, sobald ein Stift benutzt wurde
+  if(e.pointerType==='touch'){
+    e.preventDefault();try{ink.setPointerCapture(e.pointerId)}catch(_){}
+    TOUCH.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(TOUCH.size>=2){cancelTouchStroke();startPinch();return} // zwei Finger = zoomen/verschieben
+    if(penSeen||pinch)return; // Handballen ignorieren, sobald ein Stift benutzt wurde
+  }
   if(e.pointerType==='mouse'&&e.button!==0)return;
-  const p=shown;if(!p)return;
+  const p=shown;if(!p||drawing)return;
   e.preventDefault();try{ink.setPointerCapture(e.pointerId)}catch(_){}
   pushUndo(p);
   const q=pt(e);
   const eraser=tool==='eraser'||(e.pointerType==='pen'&&(e.button===5||(e.buttons&32)));
-  if(eraser){drawing={eraser:true,pid:e.pointerId,n:p.strokes.length};eraseAt(p,q);return}
+  const touch=e.pointerType==='touch';
+  if(eraser){drawing={eraser:true,pid:e.pointerId,n:p.strokes.length,touch};eraseAt(p,q);return}
   const s={c:tool==='hl'?HL:color,s:tool==='hl'?size*3.2:size,hl:tool==='hl',p:[q]};
-  p.strokes.push(s);drawing={s,pid:e.pointerId};drawStroke(s);
+  p.strokes.push(s);drawing={s,pid:e.pointerId,touch};drawStroke(s);
 });
 ink.addEventListener('pointermove',e=>{
+  const f=TOUCH.get(e.pointerId);
+  if(f){f.x=e.clientX;f.y=e.clientY;if(pinch&&TOUCH.size>=2){movePinch();return}}
   if(!drawing||e.pointerId!==drawing.pid||!shown)return;
   const evs=e.getCoalescedEvents?e.getCoalescedEvents():[e];
   for(const ev of (evs.length?evs:[e])){
@@ -865,7 +1013,11 @@ function endDraw(e){
   if(drawing.eraser&&shown&&shown.strokes.length===drawing.n)UNDO[shown.id]?.pop();
   drawing=null;save();
 }
-ink.addEventListener('pointerup',endDraw);ink.addEventListener('pointercancel',endDraw);
+function endTouch(e){
+  if(!TOUCH.delete(e.pointerId))return;
+  if(pinch){if(TOUCH.size>=2)startPinch();else{pinch=null;applyZoom(true)}}
+}
+ink.addEventListener('pointerup',e=>{endTouch(e);endDraw(e)});ink.addEventListener('pointercancel',e=>{endTouch(e);endDraw(e)});
 function undoInk(){const p=shown;if(!p)return;const st=UNDO[p.id];if(!st||!st.length){toast('Nichts zum Rückgängig-Machen');return}p.strokes=st.pop();drawAll();save()}
 
 document.querySelectorAll('#penbar [data-tool]').forEach(b=>b.onclick=()=>setTool(b.dataset.tool));
@@ -907,32 +1059,242 @@ function tickClock(){
 let T=null,AC=null;
 function ensureAudio(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume()}catch(_){}}
 function beep(){if(!AC)return;try{const t0=AC.currentTime;for(let i=0;i<3;i++){const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=880;o.connect(g);g.connect(AC.destination);const t=t0+i*.4;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.25,t+.03);g.gain.exponentialRampToValueAtTime(.001,t+.35);o.start(t);o.stop(t+.36)}}catch(_){}}
-/* Timer stellen (Uhr antippen oder „⏱ Timer“) */
+/* Timer stellen (Uhr antippen oder „⏱ Timer“): Minuten oder bis zu einer Uhrzeit */
 const TPRE=[1,2,3,5,10,15,20,30];
-let tdMin=5;
-function showTdMin(){$('#tdMin').textContent=tdMin;document.querySelectorAll('.tdpre button').forEach(b=>b.classList.toggle('on',+b.dataset.m===tdMin))}
-TPRE.forEach(n=>{const b=el('button',null,String(n));b.dataset.m=n;b.onclick=()=>{tdMin=n;showTdMin()};$('.tdpre').append(b)});
+let tdMin=5,tdMode='min';
+const toMin=t=>{const [h,m]=t.split(':').map(Number);return h*60+m};
+const fromMin=n=>{n=((n%1440)+1440)%1440;return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')};
+const nowMin=()=>{const d=new Date();return d.getHours()*60+d.getMinutes()};
+function showTdMin(){$('#tdMin').textContent=tdMin;document.querySelectorAll('#tdPreMin button').forEach(b=>b.classList.toggle('on',+b.dataset.m===tdMin))}
+TPRE.forEach(n=>{const b=el('button',null,String(n));b.dataset.m=n;b.onclick=()=>{tdMin=n;showTdMin()};$('#tdPreMin').append(b)});
 document.querySelectorAll('.tdb').forEach(b=>b.onclick=()=>{tdMin=Math.min(90,Math.max(1,tdMin+(+b.dataset.d)));showTdMin()});
-function openTimerDlg(){tdMin=S.tmin||5;showTdMin();$('#tdlg').hidden=false}
+function showTdMode(){
+  document.querySelectorAll('.tdmode button').forEach(b=>b.classList.toggle('on',b.dataset.mode===tdMode));
+  $('#tdMinBox').hidden=tdMode!=='min';$('#tdUntilBox').hidden=tdMode!=='until';
+  if(tdMode!=='until')return;
+  // Schnellwahl: die nächsten Stundenenden
+  const box=$('#tdPreEnd'),n=nowMin();box.innerHTML='';
+  const ends=LESSON_ENDS.filter(t=>toMin(t)>n).slice(0,4);
+  $('#tdEndCap').hidden=!ends.length;box.hidden=!ends.length;
+  ends.forEach(t=>{const b=el('button',null,t);b.dataset.t=t;b.onclick=()=>{$('#tdTime').value=t;markEnd()};box.append(b)});
+  markEnd();
+}
+function markEnd(){const v=$('#tdTime').value;document.querySelectorAll('#tdPreEnd button').forEach(b=>b.classList.toggle('on',b.dataset.t===v))}
+document.querySelectorAll('.tdmode button').forEach(b=>b.onclick=()=>{tdMode=b.dataset.mode;showTdMode()});
+document.querySelectorAll('.tdu').forEach(b=>b.onclick=()=>{const v=$('#tdTime').value||fromMin(nowMin());$('#tdTime').value=fromMin(toMin(v)+(+b.dataset.d));markEnd()});
+$('#tdTime').addEventListener('input',markEnd);
+function openTimerDlg(){
+  tdMin=S.tmin||5;tdMode=S.tmode||'min';showTdMin();
+  // Uhrzeit: zuletzt gewählte, falls noch nicht vorbei – sonst in 10 Minuten (auf 5 Minuten gerundet)
+  const n=nowMin();
+  $('#tdTime').value=S.tuntil&&toMin(S.tuntil)>n?S.tuntil:fromMin(Math.ceil((n+10)/5)*5);
+  showTdMode();$('#tdlg').hidden=false;
+}
 function closeTimerDlg(){$('#tdlg').hidden=true}
-function startFromDlg(){S.tmin=tdMin;save();closeTimerDlg();startTimer(tdMin)}
+function startFromDlg(){
+  S.tmode=tdMode;
+  if(tdMode==='until'){
+    const v=$('#tdTime').value;if(!v){toast('Bitte eine Uhrzeit einstellen.');return}
+    const d=new Date(),[h,m]=v.split(':').map(Number);d.setHours(h,m,0,0);
+    const ms=d.getTime()-Date.now();
+    if(ms<=0){toast('Diese Uhrzeit ist schon vorbei.');return}
+    S.tuntil=v;closeTimerDlg();startTimerMs(ms,v);return;
+  }
+  S.tmin=tdMin;closeTimerDlg();startTimer(tdMin);
+}
 $('#mTimer').onclick=openTimerDlg;
 $('#tdStart').onclick=startFromDlg;
 $('#tdCancel').onclick=closeTimerDlg;
 $('#tdlg').addEventListener('click',e=>{if(e.target.id==='tdlg')closeTimerDlg()});
-function startTimer(min){ensureAudio();T={total:min*60000,end:Date.now()+min*60000,left:min*60000,running:true,rung:false};$('#timer').hidden=false;tickTimer();fitLeft();toast('Timer: '+min+' Minuten')}
+function startTimer(min){startTimerMs(min*60000,null)}
+// until = „10:15“ (bis Uhrzeit) oder null (Minuten). Der Timer wird gespeichert und läuft nach dem Neuladen weiter.
+function startTimerMs(ms,until){
+  ensureAudio();
+  T={total:ms,end:Date.now()+ms,left:ms,running:true,rung:false,until,min:Math.round(ms/60000)};
+  S.T=T;S.bigT=true;save();
+  $('#timer').hidden=false;showBig();tickTimer();fitLeft();
+  toast(until?'Timer bis '+until+' Uhr':'Timer: '+T.min+' Minuten');
+}
+function stopTimer(){T=null;S.T=null;$('#timer').hidden=true;$('#bigT').hidden=true;fitLeft();save()}
+function pauseTimer(){
+  if(!T)return;
+  if(T.running){T.left=T.end-Date.now();T.running=false}
+  else{if(T.left<=0)return;T.end=Date.now()+T.left;T.running=true}
+  S.T=T;save();tickTimer();
+}
+const mmss=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
 function tickTimer(){
   if(!T)return;const t=$('#timer');
   const left=T.running?T.end-Date.now():T.left;
-  const over=left<=0;
-  const a=Math.abs(Math.ceil(left/1000));const txt=(over?'Zeit! ':'')+(over?'':Math.floor(a/60)+':'+String(a%60).padStart(2,'0'));
-  $('#tval').textContent=txt;
+  const over=left<=0,txt=mmss(Math.abs(Math.ceil(left/1000)));
+  $('#tval').textContent=over?'Zeit! ':txt;
   t.classList.toggle('over',over);t.classList.toggle('paused',!T.running&&!over);
   $('#tbar').style.width=Math.max(0,Math.min(100,left/T.total*100))+'%';
-  if(over&&!T.rung){T.rung=true;beep()}
+  if(over&&!T.rung){T.rung=true;S.T=T;save();beep()}
+  const big=$('#bigT');
+  if(!big.hidden){
+    const f=over?0:Math.max(0,Math.min(1,left/T.total));
+    const sec=$('#btSector');sec.setAttribute('d',sectorPath(f));sec.setAttribute('fill',!T.running&&!over?'#9aa0a6':'#e53935');
+    $('#btBg').setAttribute('fill',over?'#ffd5d2':'#f4f5f6');
+    $('#btLeft').textContent=over?'Zeit!':(T.running?'':'⏸ ')+txt;
+    big.classList.toggle('over',over);
+  }
 }
-$('#timer').onclick=()=>{if(!T)return;if(T.running){T.left=T.end-Date.now();T.running=false}else{if(T.left<=0)return;T.end=Date.now()+T.left;T.running=true}tickTimer()};
-$('#tstop').onclick=e=>{e.stopPropagation();T=null;$('#timer').hidden=true;fitLeft()};
+$('#timer').onclick=pauseTimer;
+$('#tstop').onclick=e=>{e.stopPropagation();stopTimer()};
+$('#tbig').onclick=e=>{e.stopPropagation();S.bigT=true;save();showBig()};
+
+/* großer Kreis-Timer: die rote Fläche wird immer kleiner (wandert im Uhrzeigersinn zur 12) */
+(function buildBig(){
+  let s='<circle id="btBg" cx="100" cy="100" r="96" fill="#f4f5f6" stroke="#4a4f54" stroke-width="3"/><path id="btSector" fill="#e53935"/>';
+  for(let i=0;i<12;i++){const a=i*30*Math.PI/180,r2=i%3?89:84;s+=`<line x1="${100+96*Math.sin(a)}" y1="${100-96*Math.cos(a)}" x2="${100+r2*Math.sin(a)}" y2="${100-r2*Math.cos(a)}" stroke="#4a4f54" stroke-width="${i%3?2:4}"/>`}
+  s+='<circle cx="100" cy="100" r="7" fill="#4a4f54"/>';
+  $('#btSvg').innerHTML=s;
+})();
+// f = Anteil der verbleibenden Zeit (1 = voller Kreis, 0 = leer)
+function sectorPath(f){
+  const R=92;
+  if(f<=0.0005)return '';
+  if(f>=0.9995)return `M100,${100-R} A${R},${R} 0 1,1 100,${100+R} A${R},${R} 0 1,1 100,${100-R} Z`;
+  const a=(1-f)*2*Math.PI,x=100+R*Math.sin(a),y=100-R*Math.cos(a);
+  return `M100,100 L${x.toFixed(2)},${y.toFixed(2)} A${R},${R} 0 ${f>.5?1:0},1 100,${100-R} Z`;
+}
+function showBig(){
+  if(!T)return;const box=$('#bigT');
+  box.hidden=false;$('#btUntil').textContent=T.until?'bis '+T.until+' Uhr':T.min+' Minuten';
+  layoutBig();tickTimer();
+}
+function layoutBig(){
+  const box=$('#bigT');if(box.hidden)return;
+  const VW=innerWidth,VH=innerHeight,b=S.tbox||{};
+  // Höhe ≈ 1,3 × Breite -> passt immer auf den Bildschirm
+  const w=Math.round(clamp(b.w?b.w*VW:Math.min(VW,VH)*.4,150,Math.min(VW-8,(VH-30)/1.32)));
+  box.style.width=w+'px';
+  $('#btLeft').style.fontSize=Math.max(22,w*.17)+'px';$('#btUntil').style.fontSize=Math.max(13,w*.065)+'px';
+  const h=box.offsetHeight;
+  box.style.left=clamp(b.x!=null?b.x*VW:VW-w-Math.max(24,VW*.05),0,VW-w)+'px';
+  box.style.top=clamp(b.y!=null?b.y*VH:(VH-h)/2,0,VH-h)+'px';
+}
+// ziehen = verschieben, Ecke = größer/kleiner, kurz antippen = Pause/weiter
+(function bigMoves(){
+  const box=$('#bigT'),rz=$('#btRz');let m=null;
+  box.addEventListener('pointerdown',e=>{
+    if(e.target.closest('button'))return;
+    if(e.pointerType==='mouse'&&e.button!==0)return;
+    m={t:e.target===rz?'size':'move',id:e.pointerId,x0:e.clientX,y0:e.clientY,r:box.getBoundingClientRect(),on:false};
+    try{box.setPointerCapture(e.pointerId)}catch(_){}e.preventDefault();
+  });
+  box.addEventListener('pointermove',e=>{
+    if(!m||e.pointerId!==m.id)return;
+    const dx=e.clientX-m.x0,dy=e.clientY-m.y0,r=m.r,iw=innerWidth,ih=innerHeight;
+    if(!m.on){if(Math.hypot(dx,dy)<6)return;m.on=true}
+    if(m.t==='move')S.tbox={x:(r.left+dx)/iw,y:(r.top+dy)/ih,w:r.width/iw};
+    else{const d=Math.abs(dx)>Math.abs(dy)?dx:dy;S.tbox={x:r.left/iw,y:r.top/ih,w:Math.max(150,r.width+d)/iw}}
+    layoutBig();
+  });
+  const up=e=>{
+    if(!m||e.pointerId!==m.id)return;
+    if(m.on){const r=box.getBoundingClientRect();S.tbox={x:r.left/innerWidth,y:r.top/innerHeight,w:r.width/innerWidth};save()}
+    else if(e.type==='pointerup'&&m.t==='move')pauseTimer();
+    m=null;
+  };
+  box.addEventListener('pointerup',up);box.addEventListener('pointercancel',up);
+})();
+$('#btMin').onclick=()=>{$('#bigT').hidden=true;S.bigT=false;save()};
+$('#btClose').onclick=stopTimer;
+// nach dem Neuladen: Ton erst nach der ersten Berührung möglich
+addEventListener('pointerdown',()=>{if(T&&!AC)ensureAudio()},true);
+
+/* ---------- Musik: eigene Dateien, bleiben nur auf diesem Gerät ---------- */
+let SONGS=[],playing=null;      // SONGS: [{id,name,type}], playing = id des laufenden Liedes
+const SONGURL={};               // id -> Adresse zum Abspielen
+const AUD=new Audio();AUD.preload='auto';
+// „01 - Aufräumlied.mp3“ -> „Aufräumlied“
+const songName=f=>f.replace(/\.[^.]+$/,'').replace(/^\d+\s*[._-]\s*/,'').replace(/_/g,' ').trim()||f;
+// Lieder beim Start vorladen: Abspielen muss sofort beim Antippen passieren (sonst blockt das iPad den Ton)
+async function loadSongs(){
+  SONGS=(await DB.get('songs'))||[];
+  for(const s of SONGS){const buf=await DB.get('song:'+s.id);if(buf)SONGURL[s.id]=URL.createObjectURL(new Blob([buf],{type:s.type||'audio/mpeg'}))}
+  SONGS=SONGS.filter(s=>SONGURL[s.id]);
+  renderMusic();
+}
+async function addSongs(files){
+  let ok=0;
+  for(const f of files){
+    try{
+      const buf=await f.arrayBuffer(),name=songName(f.name),type=f.type||'audio/mpeg';
+      const ex=SONGS.find(s=>norm(s.name)===norm(name)),id=ex?ex.id:uid(); // gleicher Name = ersetzen
+      if(!await DB.set('song:'+id,buf))throw 0;
+      if(ex&&playing===id)stopMusic();
+      if(SONGURL[id])URL.revokeObjectURL(SONGURL[id]);
+      SONGURL[id]=URL.createObjectURL(new Blob([buf],{type}));
+      if(ex)ex.type=type;else SONGS.push({id,name,type});
+      ok++;
+    }catch(_){}
+  }
+  SONGS.sort((a,b)=>a.name.localeCompare(b.name,'de'));
+  await DB.set('songs',SONGS);renderMusic();render();
+  toast(ok===files.length?(ok===1?'1 Lied geladen':ok+' Lieder geladen'):ok+' von '+files.length+' Liedern geladen – ist der Speicher voll?');
+}
+async function deleteSong(id){
+  if(playing===id)stopMusic();
+  SONGS=SONGS.filter(s=>s.id!==id);if(SONGURL[id])URL.revokeObjectURL(SONGURL[id]);delete SONGURL[id];
+  await DB.del('song:'+id);await DB.set('songs',SONGS);renderMusic();
+}
+function playSong(id){
+  if(playing===id){stopMusic();return}
+  const u=SONGURL[id];if(!u)return;
+  AUD.pause();AUD.src=u;AUD.loop=!!S.mloop;playing=id;
+  const p=AUD.play();
+  if(p&&p.catch)p.catch(err=>{if(playing===id&&(!err||err.name!=='AbortError')){playing=null;musicUI();toast('Das Lied lässt sich nicht abspielen.')}});
+  musicUI();
+}
+function stopMusic(){AUD.pause();try{AUD.currentTime=0}catch(_){}playing=null;musicUI()}
+AUD.addEventListener('ended',()=>{if(!AUD.loop){playing=null;musicUI()}});
+function findSong(name){
+  const k=norm(name||'');if(!k)return null;
+  return SONGS.find(s=>norm(s.name)===k)||SONGS.find(s=>norm(s.name).startsWith(k))||SONGS.find(s=>norm(s.name).includes(k))||null;
+}
+// Musik-Knopf im Plan: [Musik Aufräumlied]
+function playByName(name){
+  const s=findSong(name);
+  if(s){playSong(s.id);return}
+  if(!name&&playing){stopMusic();return}
+  openMusic();
+  if(name)toast('Das Lied „'+name+'“ ist auf diesem Gerät noch nicht geladen.');
+}
+function musicChips(){
+  document.querySelectorAll('button.chip.mus').forEach(b=>{
+    const n=b.dataset.song,s=findSong(n),on=s?s.id===playing:(!n&&!!playing);
+    b.classList.toggle('on',on);b.textContent=(on?'■ ':'🎵 ')+(s?s.name:(n||'Musik'));
+  });
+}
+function musicUI(){
+  const mb=$('#mMusic');mb.classList.toggle('on',!!playing);mb.textContent=playing?'🔊 Musik':'🎵 Musik';
+  document.querySelectorAll('#mpList .song').forEach(b=>{const on=b.dataset.id===playing;b.classList.toggle('on',on);b.textContent=(on?'■ ':'▶ ')+b.dataset.name});
+  $('#mpStop').disabled=!playing;$('#mpLoop').classList.toggle('on',!!S.mloop);
+  musicChips();
+}
+function renderMusic(){
+  const ul=$('#mpList');ul.innerHTML='';
+  if(!SONGS.length)ul.append(el('li','muted','Noch keine Musik auf diesem Gerät. Tippen Sie auf „＋ Musik laden“ und wählen Sie Musikdateien aus (z. B. mp3). Im Plan spielt [Musik Liedname] das Lied ab.'));
+  SONGS.forEach(s=>{
+    const li=el('li'),b=el('button','song');b.dataset.id=s.id;b.dataset.name=s.name;b.onclick=()=>playSong(s.id);
+    const x=el('button','mpx','✕');x.title='Lied entfernen';x.onclick=()=>confirmTap(x,()=>deleteSong(s.id),'?');
+    li.append(b,x);ul.append(li);
+  });
+  musicUI();
+}
+function openMusic(){$('#mpanel').hidden=false;renderMusic()}
+function closeMusic(){$('#mpanel').hidden=true}
+$('#mMusic').onclick=()=>{if($('#mpanel').hidden)openMusic();else closeMusic()};
+$('#mpClose').onclick=closeMusic;
+$('#mpStop').onclick=stopMusic;
+$('#mpLoop').onclick=()=>{S.mloop=!S.mloop;AUD.loop=S.mloop;save();musicUI()};
+$('#mpLoad').onclick=()=>$('#fileMusic').click();
+$('#fileMusic').onchange=e=>{const f=[...e.target.files];e.target.value='';if(f.length)addSongs(f)};
+// woanders hintippen schließt das Musikfenster
+addEventListener('pointerdown',e=>{if(!$('#mpanel').hidden&&!e.target.closest('#mpanel,#mMusic,.chip.mus'))closeMusic()},true);
 
 /* ---------- Menü & Planen ---------- */
 function confirmTap(btn,fn,label){
@@ -1042,7 +1404,8 @@ $('#lSave').onclick=async()=>{
   const ok=await DB.set('lessons',ex?all.map(l=>l===ex?rec:l):[...all,rec]);
   toast(ok?'„'+name+'“ gespeichert':'Speichern ging nicht – bitte „Als Datei sichern“ nutzen.');renderLessons();
 };
-$('#lNew').onclick=()=>confirmTap($('#lNew'),()=>{S={text:'Titel: Was liegt an?\n',done:{},pages:[],view:'auto',focus:null,sheet:{...S.sheet,on:false},infoBox:S.infoBox,clock:S.clock,leftBox:S.leftBox,planFs:S.planFs,std:0};lastCur=-2;$('#lname').value='';src.value=S.text;render();save();src.focus()},'Aktuelle Stunde leeren?');
+$('#lNew').onclick=()=>confirmTap($('#lNew'),()=>{S={text:'Titel: Was liegt an?\n',done:{},pages:[],view:'auto',focus:null,sheet:{...S.sheet,on:false},infoBox:S.infoBox,clock:S.clock,leftBox:S.leftBox,planFs:S.planFs,std:0,
+  T:S.T,bigT:S.bigT,tbox:S.tbox,tmin:S.tmin,tmode:S.tmode,tuntil:S.tuntil,mloop:S.mloop};lastCur=-2;$('#lname').value='';src.value=S.text;render();save();src.focus()},'Aktuelle Stunde leeren?');
 
 $('#lLayout').onclick=()=>{S.leftBox=null;S.planFs=null;S.infoBox=null;S.clock=null;render();save();toast('Ablauf, Uhr und Info-Karte sind wieder an ihrem Platz')};
 
@@ -1073,6 +1436,7 @@ document.addEventListener('keydown',e=>{
   if(e.ctrlKey||e.metaKey||e.altKey)return;
   if(['ArrowRight',' ','PageDown','Enter'].includes(e.key)){e.preventDefault();checkCurrent()}
   else if(['ArrowLeft','PageUp','Backspace'].includes(e.key)){e.preventDefault();uncheckLast()}
+  else if(e.key==='Escape'&&S.sheet.on&&S.sheet.full)setSheetFull(false);
   else if(e.key==='Escape'&&S.sheet.on){S.sheet.on=false;renderSheet();save()}
 });
 
@@ -1085,12 +1449,17 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
 
 /* ---------- Start ---------- */
 function render(){PLAN=parse(S.text);S.std=Math.min(Math.max(S.std||0,0),PLAN.length-1);P=PLAN[S.std];renderAgenda();renderRight()}
-let rT;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(render,80)});
+let rT;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{render();layoutBig()},80)});
 (async()=>{
   CARDSTORE=(await DB.get('cards'))||{};buildCards();renderCards();
   const saved=await DB.get('current');
   if(saved&&typeof saved.text==='string'){S=Object.assign({done:{},pages:[],view:'auto',focus:null},saved);S.sheet=Object.assign({...SHEET_DEFAULT},saved.sheet||{})}
+  // laufender Timer überlebt das Neuladen (z. B. wenn das iPad die App neu startet); lange abgelaufene fallen weg
+  if(S.T&&S.T.total){T=S.T;const left=T.running?T.end-Date.now():T.left;
+    if(left<-20*60000)T=S.T=null;else{if(left<=0)T.rung=true;$('#timer').hidden=false}}
   render();tickClock();setInterval(tickClock,250);
+  if(T&&S.bigT)showBig();
+  loadSongs();
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(render);
 })();
 </script>

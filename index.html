@@ -1504,7 +1504,7 @@ addEventListener('pointerdown',e=>{if(!$('#vpanel').hidden&&!e.target.closest('#
 // Die Liste wird auf diesem Gerät gespeichert; am Anfang stehen die bekannten Mathe-Apps darin.
 const APPS_DEFAULT=[
   {name:'Mathe Klasse 1',url:'https://frauza.github.io/Mathe-Klasse-1/'},
-  {name:'Zahlen-Start (Klasse 1)',url:'https://mathe-klasse-1-zahlenstart.vercel.app'},
+  {name:'Mathe 1_Zahlenstart',url:'https://mathe-klasse-1-zahlenstart.vercel.app'},
   {name:'Mathe Klasse 2',url:'https://klasse-2-wdh-rechenstrategien.vercel.app'},
   {name:'Spiegeln (Klasse 2)',url:'https://frauza.github.io/Mathe-Symmetrie/'},
   {name:'Mal und Geteilt',url:'https://frauza.github.io/Mal--und-Geteiltaufgaben-ben/'}
@@ -1513,6 +1513,8 @@ let APPS=[],curApp=null;   // APPS: [{id,name,url}]
 async function loadApps(){
   const a=await DB.get('apps');
   APPS=Array.isArray(a)?a:APPS_DEFAULT.map(x=>({id:uid(),...x}));
+  // alter Name aus der ersten Fassung -> neuer Name (falls die Liste schon gespeichert ist)
+  APPS.forEach(x=>{if(x.name==='Zahlen-Start (Klasse 1)'){x.name='Mathe 1_Zahlenstart';saveApps()}});
   renderApps();appChips();
 }
 const saveApps=()=>DB.set('apps',APPS);

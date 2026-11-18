@@ -203,6 +203,32 @@ button.chip.mus.on{background:#ffe27a;color:#3a3200}
 #vwin.full #vhead{cursor:default}
 #vwin.full #vid{flex:1;min-height:0;width:100%!important;height:auto!important;border-radius:0}
 #vwin.full #vRz{display:none}
+/* Apps: Liste, App-Fenster (wie Video) und großer QR-Code zum Scannen */
+#apanel{position:fixed;right:max(12px,env(safe-area-inset-right));bottom:calc(max(10px,env(safe-area-inset-bottom)) + 52px);z-index:8;width:min(420px,92vw);max-height:76vh;display:flex;flex-direction:column;background:#fff;color:#1b1b1b;border-radius:16px;box-shadow:0 16px 44px rgba(0,0,0,.5);padding:12px}
+#apList{list-style:none;margin:0;padding:0;overflow:auto;min-height:0}
+#apList li{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+#apList .muted{display:block;padding:6px 4px;line-height:1.4}
+.mpx.qr{width:56px;background:#2e5545;color:#fff;font-size:15px}
+#apForm{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+#apForm input{height:44px;border-radius:10px;border:2px solid #cfd6cf;padding:0 10px;font-size:16px;color:#1b1b1b;background:#fff;-webkit-user-select:text;user-select:text}
+#awin{position:fixed;z-index:7;background:rgba(18,30,25,.96);border-radius:14px;box-shadow:0 16px 44px rgba(0,0,0,.5);padding:0 7px 7px;display:flex;flex-direction:column}
+#ahead{display:flex;align-items:center;gap:6px;height:58px;flex:none;cursor:move;touch-action:none;padding:0 2px;overflow:hidden}
+#ahead .grip{font-size:24px;opacity:.6;padding:0 4px;flex:none}
+#aname{flex:1;min-width:0;font-weight:700;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#aframe{flex:1;min-height:0;width:100%;border:0;background:#fff;border-radius:8px}
+#awin.moving #aframe{pointer-events:none}
+#aRz{position:absolute;right:-4px;bottom:-4px;width:46px;height:46px;cursor:nwse-resize;touch-action:none;border-radius:0 0 14px 0;background:linear-gradient(135deg,transparent 52%,#8f959b 52%,#8f959b 60%,transparent 60%,transparent 68%,#8f959b 68%,#8f959b 76%,transparent 76%)}
+#awin.full{left:0!important;top:0!important;width:auto!important;height:auto!important;right:0;bottom:0;border-radius:0;background:#10181a;padding-top:env(safe-area-inset-top);box-shadow:none}
+#awin.full #ahead{cursor:default}
+#awin.full #aframe{border-radius:0}
+#awin.full #aRz{display:none}
+#aQr{font-size:15px;padding:0 10px}
+#qrdlg{position:fixed;inset:0;z-index:26;background:rgba(0,0,0,.6);display:grid;place-items:center;padding:12px}
+#qrcard{background:#fff;color:#1b1b1b;border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:18px 22px 16px;text-align:center;position:relative;max-width:96vw}
+#qrname{font-size:clamp(24px,4.5vmin,44px);font-weight:800;margin:0 48px 8px;line-height:1.15}
+#qrimg svg{display:block;width:min(70vh,82vw);height:min(70vh,82vw);margin:0 auto}
+#qrurl{font-size:15px;color:#666;margin-top:8px;word-break:break-all}
+#qrClose{position:absolute;right:12px;top:12px;width:46px;height:46px;border-radius:12px;border:0;background:#eef0f2;font-size:20px;font-weight:700;color:#333}
 #menu button.armed{background:#e53935}
 body.editing #menu{display:none}
 
@@ -330,6 +356,7 @@ body.standalone #mFull{display:none}
   <button id="mCam">📷 Kamera</button>
   <button id="mMusic">🎵 Musik</button>
   <button id="mVideo">🎬 Video</button>
+  <button id="mApps">🧮 Apps</button>
   <button id="mTimer">⏱ Timer</button>
   <button id="mSheet">📝 Blatt</button>
   <button id="mEdit">✏️ Planen</button>
@@ -351,6 +378,7 @@ body.standalone #mFull{display:none}
       <li><code>[Buch] S. 12</code> = Bildkarte „Buch“, angezeigt wird nur „S. 12“ (Bilder nur mit eckigen Klammern; gibt es die Karte nicht, bleibt das Feld leer) · <code>[Buch 2]</code> = Karte für Klasse 2 · Karten: <span id="cardList"></span></li>
       <li><code>[Musik Aufräumlied]</code> = Musik-Knopf an diesem Punkt (spielt das Lied „Aufräumlied“; die Lieder laden Sie unten rechts über „🎵 Musik“)</li>
       <li><code>[Video Igel]</code> = Video-Knopf an diesem Punkt (öffnet das Video „Igel“; Videos laden Sie unten rechts über „🎬 Video“)</li>
+      <li><code>[App Mal und Geteilt]</code> = App-Knopf an diesem Punkt (öffnet die App) · <code>[QR Mal und Geteilt]</code> = zeigt gleich den großen QR-Code zum Scannen (Ihre Apps stehen unten rechts unter „🧮 Apps“)</li>
       <li><code>&gt; Text</code> = Info-Karte rechts – Farbwörter (rot, gelb, grün …) werden farbig</li>
       <li><code>Titel: …</code> = Überschrift. <b>Jede weitere <code>Titel:</code>-Zeile beginnt eine neue Stunde</b> (eigene Seite, blättern mit ◀ ▶). Auch <code>---</code> beginnt eine neue Seite.</li>
     </ul>
@@ -419,11 +447,30 @@ body.standalone #mFull{display:none}
   <video id="vid" controls playsinline preload="metadata"></video>
   <div id="vRz" title="Zum Vergrößern ziehen"></div>
 </div>
+<div id="apanel" hidden>
+  <div class="mph"><span>🧮 Apps</span><button id="apClose" title="Schließen">✕</button></div>
+  <ul id="apList"></ul>
+  <form id="apForm" hidden autocomplete="off">
+    <input id="apName" placeholder="Name, z. B. Uhr lernen" enterkeyhint="next">
+    <input id="apUrl" placeholder="Adresse, z. B. https://….vercel.app" inputmode="url" autocapitalize="off" spellcheck="false" enterkeyhint="done">
+    <div class="mpact" style="margin-top:0"><button type="button" id="apCancel">Abbrechen</button><button type="submit">Speichern</button></div>
+  </form>
+  <div class="mpact" id="apAddRow"><button id="apAdd">＋ App hinzufügen</button></div>
+</div>
+<div id="awin" hidden>
+  <div id="ahead"><span class="grip" title="Zum Verschieben ziehen">⠿</span><span id="aname"></span><button class="hbtn" id="aQr" title="QR-Code zum Scannen zeigen">▦ QR</button><button class="hbtn" id="aExt" title="Im Browser öffnen">↗</button><button class="hbtn" id="aFull" title="Ganzer Bildschirm">⛶</button><button class="hbtn" id="aClose" title="App schließen">✕</button></div>
+  <iframe id="aframe" allow="fullscreen; autoplay; clipboard-write" allowfullscreen></iframe>
+  <div id="aRz" title="Zum Vergrößern ziehen"></div>
+</div>
+<div id="qrdlg" hidden>
+  <div id="qrcard"><button id="qrClose" title="Schließen">✕</button><div id="qrname"></div><div id="qrimg"></div><div id="qrurl"></div></div>
+</div>
 <input type="file" id="fileVideo" accept="video/*,.mp4,.mov,.m4v,.webm" multiple hidden>
 <input type="file" id="fileMusic" accept="audio/*,.mp3,.m4a,.wav,.aac" multiple hidden>
 <input type="file" id="fileLesson" accept=".json,application/json" hidden>
 <input type="file" id="fileCards" accept="image/*" multiple hidden>
 
+<script src="qrcode.js"></script>
 <script>
 'use strict';
 const $=s=>document.querySelector(s);
@@ -525,6 +572,10 @@ function parseItem(line){
   // [Musik Aufräumlied] = Musik-Knopf an diesem Punkt (vor den Karten, sonst würde „Musik …“ als Karte gesucht)
   s=s.replace(/\[\s*(?:musik|lied)\b\s*:?\s*([^\]]*)\]/i,(m,n)=>{music=n.trim();return ' '});
   let video=null;s=s.replace(/\[\s*(?:video|film)\b\s*:?\s*([^\]]*)\]/i,(m,n)=>{video=n.trim();return ' '});
+  // [App Uhr] = App öffnen, [QR Uhr] = QR-Code der App zeigen
+  let app=null,qr=null;
+  s=s.replace(/\[\s*qr(?:-?code)?\b\s*:?\s*([^\]]*)\]/i,(m,n)=>{qr=n.trim();return ' '});
+  s=s.replace(/\[\s*app\b\s*:?\s*([^\]]*)\]/i,(m,n)=>{app=n.trim();return ' '});
   // [Bild 1] = Seite 1 im Blatt (wie bisher)
   s=s.replace(/\[\s*bild\s*(\d*)\s*\]/i,(m,n)=>{bild=n?+n:1;return ' '});
   // [Karte Buch] = Karte, das Wort verschwindet aus dem Text
@@ -535,7 +586,7 @@ function parseItem(line){
   s=s.replace(/(^|\s)(\d{1,3})\s*(?:minuten|min\.?|')(?=\s|$)/i,(m,a,n)=>{dur=+n;return ' '});
   const label=s.replace(/\s{2,}/g,' ').trim();
   // Ohne [ ] oder ohne passende Karte bleibt das Feld leer. Klasse: aus „[Buch 2]“, sonst aus dem Titel der Stunde.
-  return {label,icon,card:found?found.card:null,cardCls:found?found.cls:null,dur,bild,soz,music,video,tasks:[]};
+  return {label,icon,card:found?found.card:null,cardCls:found?found.cls:null,dur,bild,soz,music,video,app,qr,tasks:[]};
 }
 // Ein Plan kann mehrere Stunden (Seiten) enthalten: jede „Titel:“-Zeile oder „---“ beginnt eine neue Seite
 function parse(text){
@@ -646,6 +697,8 @@ function renderAgenda(){
     if(it.dur){const b=el('button','chip','⏱ '+it.dur+' min');b.title='Timer starten';b.onclick=e=>{e.stopPropagation();startTimer(it.dur)};meta.append(b)}
     if(it.music!=null){const b=el('button','chip mus');b.dataset.song=it.music;b.title='Musik abspielen / stoppen';b.onclick=e=>{e.stopPropagation();playByName(it.music)};meta.append(b)}
     if(it.video!=null){const b=el('button','chip vidc');b.dataset.vid=it.video;b.title='Video öffnen';b.onclick=e=>{e.stopPropagation();openVideoByName(it.video)};meta.append(b)}
+    if(it.app!=null){const b=el('button','chip appc');b.dataset.app=it.app;b.dataset.k='app';b.title='App öffnen';b.onclick=e=>{e.stopPropagation();openAppByName(it.app)};meta.append(b)}
+    if(it.qr!=null){const b=el('button','chip appc');b.dataset.app=it.qr;b.dataset.k='qr';b.title='QR-Code zum Scannen zeigen';b.onclick=e=>{e.stopPropagation();qrByName(it.qr)};meta.append(b)}
     if(it.bild){const b=el('button','chip','🖼 Bild '+it.bild);b.onclick=e=>{e.stopPropagation();const p=S.pages[it.bild-1];if(p){S.view=p.id;S.sheet.on=true;renderSheet();save()}else toast('Bild '+it.bild+' gibt es noch nicht – Screenshot machen und Strg+V drücken.')};meta.append(b)}
     if(meta.children.length)body.append(meta);
     const chk=el('button','chk');chk.innerHTML=CHECK;chk.title='Erledigt';
@@ -654,7 +707,7 @@ function renderAgenda(){
     if(i===cur&&it.tasks.length){const tl=el('ul','tasks');it.tasks.forEach(t=>tl.append(el('li',null,t)));li.append(tl)}
     ul.append(li);
   });
-  musicChips();videoChips();
+  musicChips();videoChips();appChips();
   fitLeft();
 }
 function toggleDone(i){
@@ -1447,6 +1500,126 @@ $('#vpLoad').onclick=()=>$('#fileVideo').click();
 $('#fileVideo').onchange=e=>{const f=[...e.target.files];e.target.value='';if(f.length)addVideos(f)};
 addEventListener('pointerdown',e=>{if(!$('#vpanel').hidden&&!e.target.closest('#vpanel,#mVideo,.chip.vidc'))closeVideoPanel()},true);
 
+/* ---------- Apps: eigene Lern-Apps öffnen oder als QR-Code zum Scannen zeigen ---------- */
+// Die Liste wird auf diesem Gerät gespeichert; am Anfang stehen die bekannten Mathe-Apps darin.
+const APPS_DEFAULT=[
+  {name:'Mathe Klasse 1',url:'https://frauza.github.io/Mathe-Klasse-1/'},
+  {name:'Zahlen-Start (Klasse 1)',url:'https://mathe-klasse-1-zahlenstart.vercel.app'},
+  {name:'Mathe Klasse 2',url:'https://klasse-2-wdh-rechenstrategien.vercel.app'},
+  {name:'Spiegeln (Klasse 2)',url:'https://frauza.github.io/Mathe-Symmetrie/'},
+  {name:'Mal und Geteilt',url:'https://frauza.github.io/Mal--und-Geteiltaufgaben-ben/'}
+];
+let APPS=[],curApp=null;   // APPS: [{id,name,url}]
+async function loadApps(){
+  const a=await DB.get('apps');
+  APPS=Array.isArray(a)?a:APPS_DEFAULT.map(x=>({id:uid(),...x}));
+  renderApps();appChips();
+}
+const saveApps=()=>DB.set('apps',APPS);
+// „mathe.vercel.app“ -> „https://mathe.vercel.app“
+function fixUrl(u){u=(u||'').trim();if(!u)return '';if(!/^https?:\/\//i.test(u))u='https://'+u.replace(/^\/+/,'');try{return new URL(u).href}catch(_){return ''}}
+const isUrl=s=>/^(https?:\/\/|www\.)|\.(app|de|com|io|net|org)(\/|$)/i.test((s||'').trim());
+function findApp(name){
+  const n=(name||'').trim();if(!n)return null;
+  if(isUrl(n)){const url=fixUrl(n);return url?(APPS.find(a=>a.url===url)||{name:new URL(url).hostname,url}):null}
+  const k=norm(n);
+  return APPS.find(a=>norm(a.name)===k)||APPS.find(a=>norm(a.name).startsWith(k))||APPS.find(a=>norm(a.name).includes(k))||null;
+}
+function openApp(a){
+  if(!a)return;closeAppPanel();
+  const f=$('#aframe');
+  if(!curApp||curApp.url!==a.url)f.src=a.url;
+  curApp=a;$('#aname').textContent='🧮 '+a.name;$('#awin').hidden=false;layoutApp();
+}
+function closeApp(){
+  $('#awin').hidden=true;$('#aframe').src='about:blank';curApp=null; // App ganz beenden (Ton aus, Speicher frei)
+}
+function missingApp(name){openAppPanel();if(name)toast('Die App „'+name+'“ steht noch nicht in Ihrer Liste unter „🧮 Apps“.')}
+function openAppByName(name){const a=findApp(name);if(a)openApp(a);else missingApp(name)}
+function qrByName(name){const a=findApp(name);if(a)showQr(a);else missingApp(name)}
+// großer QR-Code: die Kinder scannen ihn mit dem Tablet und landen direkt in der App
+function showQr(a){
+  if(!a||typeof qrcode!=='function'){toast('Der QR-Code lässt sich gerade nicht erstellen.');return}
+  closeAppPanel();
+  qrcode.stringToBytes=qrcode.stringToBytesFuncs['UTF-8'];
+  const q=qrcode(0,'M');q.addData(a.url);q.make();
+  const n=q.getModuleCount(),M=4,W=n+2*M;let d='';
+  for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+='M'+(c+M)+' '+(r+M)+'h1v1h-1z';
+  $('#qrimg').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+W+'" shape-rendering="crispEdges"><rect width="'+W+'" height="'+W+'" fill="#fff"/><path d="'+d+'" fill="#000"/></svg>';
+  $('#qrname').textContent=a.name;$('#qrurl').textContent=a.url.replace(/^https?:\/\//,'').replace(/\/$/,'');
+  $('#qrdlg').hidden=false;
+}
+function closeQr(){$('#qrdlg').hidden=true}
+$('#qrdlg').onclick=closeQr;   // irgendwo hintippen schließt
+// App-Fenster: wie Blatt/Video verschiebbar und an der Ecke größer ziehbar
+function layoutApp(){
+  const win=$('#awin');if(win.hidden)return;
+  const full=!!S.afull,VW=innerWidth,VH=innerHeight;
+  win.classList.toggle('full',full);$('#aFull').classList.toggle('on',full);$('#aFull').title=full?'Kleiner':'Ganzer Bildschirm';
+  if(full)return;
+  const b=S.abox||{x:.04,y:.04,w:.92,h:.86};
+  const w=clamp(b.w*VW,300,VW),h=clamp(b.h*VH,240,VH);
+  win.style.width=w+'px';win.style.height=h+'px';
+  win.style.left=clamp(b.x*VW,0,VW-w)+'px';win.style.top=clamp(b.y*VH,0,VH-h)+'px';
+}
+(function appMoves(){
+  const win=$('#awin'),head=$('#ahead'),rz=$('#aRz');let m=null;
+  head.addEventListener('pointerdown',e=>{
+    if(e.target.closest('button')||S.afull)return;
+    m={t:'move',id:e.pointerId,x0:e.clientX,y0:e.clientY,r:win.getBoundingClientRect()};head.setPointerCapture(e.pointerId);win.classList.add('moving');e.preventDefault();
+  });
+  rz.addEventListener('pointerdown',e=>{
+    m={t:'size',id:e.pointerId,x0:e.clientX,y0:e.clientY,r:win.getBoundingClientRect()};rz.setPointerCapture(e.pointerId);win.classList.add('moving');e.preventDefault();
+  });
+  const move=e=>{
+    if(!m||e.pointerId!==m.id)return;
+    const dx=e.clientX-m.x0,dy=e.clientY-m.y0,r=m.r,iw=innerWidth,ih=innerHeight;
+    if(m.t==='move')S.abox={x:(r.left+dx)/iw,y:(r.top+dy)/ih,w:r.width/iw,h:r.height/ih};
+    else S.abox={x:r.left/iw,y:r.top/ih,w:Math.max(300,r.width+dx)/iw,h:Math.max(240,r.height+dy)/ih};
+    layoutApp();
+  };
+  const up=e=>{if(m&&e.pointerId===m.id){m=null;win.classList.remove('moving');const r=win.getBoundingClientRect();S.abox={x:r.left/innerWidth,y:r.top/innerHeight,w:r.width/innerWidth,h:r.height/innerHeight};save()}};
+  [head,rz].forEach(x=>{x.addEventListener('pointermove',move);x.addEventListener('pointerup',up);x.addEventListener('pointercancel',up)});
+})();
+$('#aFull').onclick=()=>{S.afull=!S.afull;layoutApp();save()};
+$('#aClose').onclick=closeApp;
+$('#aQr').onclick=()=>{if(curApp)showQr(curApp)};
+// falls eine App sich nicht im Fenster zeigen lässt: im Browser öffnen
+$('#aExt').onclick=()=>{if(curApp)window.open(curApp.url,'_blank','noopener')};
+function appChips(){
+  document.querySelectorAll('button.chip.appc').forEach(b=>{
+    const n=b.dataset.app,a=findApp(n),nm=a?a.name:(n||'App');
+    b.textContent=b.dataset.k==='qr'?'▦ QR '+nm:'🧮 '+nm;
+  });
+}
+function renderApps(){
+  const ul=$('#apList');ul.innerHTML='';
+  if(!APPS.length)ul.append(el('li','muted','Noch keine Apps in der Liste. Tippen Sie auf „＋ App hinzufügen“ und geben Sie Name und Adresse ein.'));
+  APPS.forEach(a=>{
+    const li=el('li'),b=el('button','song','▶ '+a.name);b.title=a.url;b.onclick=()=>openApp(a);
+    const q=el('button','mpx qr','▦ QR');q.title='QR-Code zum Scannen zeigen';q.onclick=()=>showQr(a);
+    const x=el('button','mpx','✕');x.title='App aus der Liste nehmen';x.onclick=()=>confirmTap(x,()=>{APPS=APPS.filter(y=>y.id!==a.id);saveApps();renderApps();appChips()},'?');
+    li.append(b,q,x);ul.append(li);
+  });
+}
+function showAppForm(on){$('#apForm').hidden=!on;$('#apAddRow').hidden=on;if(on){$('#apName').value='';$('#apUrl').value='';$('#apName').focus()}}
+function openAppPanel(){closeMusic();closeVideoPanel();showAppForm(false);renderApps();$('#apanel').hidden=false}
+function closeAppPanel(){$('#apanel').hidden=true}
+$('#mApps').onclick=()=>{if($('#apanel').hidden)openAppPanel();else closeAppPanel()};
+$('#apClose').onclick=closeAppPanel;
+$('#apAdd').onclick=()=>showAppForm(true);
+$('#apCancel').onclick=()=>showAppForm(false);
+$('#apForm').onsubmit=e=>{
+  e.preventDefault();
+  const url=fixUrl($('#apUrl').value);let name=$('#apName').value.trim();
+  if(!url){toast('Bitte die Adresse der App eingeben (z. B. https://….vercel.app).');$('#apUrl').focus();return}
+  if(!name)name=new URL(url).hostname.split('.')[0];
+  const ex=APPS.find(a=>norm(a.name)===norm(name));   // gleicher Name = Adresse ersetzen
+  if(ex)ex.url=url;else APPS.push({id:uid(),name,url});
+  saveApps();showAppForm(false);renderApps();appChips();toast('„'+name+'“ ist jetzt in der Liste.');
+};
+addEventListener('pointerdown',e=>{if(!$('#apanel').hidden&&!e.target.closest('#apanel,#mApps,.chip.appc'))closeAppPanel()},true);
+
 /* ---------- Menü & Planen ---------- */
 function confirmTap(btn,fn,label){
   if(btn.dataset.armed){clearTimeout(+btn.dataset.armed);delete btn.dataset.armed;btn.classList.remove('armed');if(btn.dataset.orig!=null){btn.textContent=btn.dataset.orig}fn();return}
@@ -1587,6 +1760,8 @@ document.addEventListener('keydown',e=>{
   if(e.ctrlKey||e.metaKey||e.altKey)return;
   if(['ArrowRight',' ','PageDown','Enter'].includes(e.key)){e.preventDefault();checkCurrent()}
   else if(['ArrowLeft','PageUp','Backspace'].includes(e.key)){e.preventDefault();uncheckLast()}
+  else if(e.key==='Escape'&&!$('#qrdlg').hidden)closeQr();
+  else if(e.key==='Escape'&&!$('#awin').hidden)closeApp();
   else if(e.key==='Escape'&&!$('#vwin').hidden)closeVideo();
   else if(e.key==='Escape'&&S.sheet.on&&S.sheet.full)setSheetFull(false);
   else if(e.key==='Escape'&&S.sheet.on){S.sheet.on=false;renderSheet();save()}
@@ -1601,7 +1776,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
 
 /* ---------- Start ---------- */
 function render(){PLAN=parse(S.text);S.std=Math.min(Math.max(S.std||0,0),PLAN.length-1);P=PLAN[S.std];renderAgenda();renderRight()}
-let rT;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{render();layoutBig();layoutVideo()},80)});
+let rT;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{render();layoutBig();layoutVideo();layoutApp()},80)});
 (async()=>{
   CARDSTORE=(await DB.get('cards'))||{};buildCards();renderCards();
   const saved=await DB.get('current');
@@ -1611,7 +1786,7 @@ let rT;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{render
     if(left<-20*60000)T=S.T=null;else{if(left<=0)T.rung=true;$('#timer').hidden=false}}
   render();tickClock();setInterval(tickClock,250);
   if(T&&S.bigT)showBig();
-  loadSongs();loadVideos();
+  loadSongs();loadVideos();loadApps();
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(render);
 })();
 </script>

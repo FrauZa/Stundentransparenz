@@ -175,12 +175,13 @@ body:not(.sheet) #penbar,body.editing #penbar{display:none}
 #tdUntilBox{margin-bottom:18px}
 #tdUntilBox .tdpre{margin-bottom:0}
 /* Musik */
-#mpanel{position:fixed;right:max(12px,env(safe-area-inset-right));bottom:calc(max(10px,env(safe-area-inset-bottom)) + 52px);z-index:8;width:min(380px,92vw);max-height:70vh;display:flex;flex-direction:column;background:#fff;color:#1b1b1b;border-radius:16px;box-shadow:0 16px 44px rgba(0,0,0,.5);padding:12px}
+#mpanel,#vpanel{position:fixed;right:max(12px,env(safe-area-inset-right));bottom:calc(max(10px,env(safe-area-inset-bottom)) + 52px);z-index:8;width:min(380px,92vw);max-height:70vh;display:flex;flex-direction:column;background:#fff;color:#1b1b1b;border-radius:16px;box-shadow:0 16px 44px rgba(0,0,0,.5);padding:12px}
 .mph{display:flex;align-items:center;justify-content:space-between;font-size:20px;font-weight:700;margin:0 0 8px 4px}
 .mph button{width:42px;height:42px;border-radius:10px;border:0;background:#eef0f2;font-size:18px;font-weight:700;color:#333}
-#mpList{list-style:none;margin:0;padding:0;overflow:auto;min-height:0}
-#mpList li{display:flex;align-items:center;gap:6px;margin-bottom:6px}
-#mpList .muted{display:block;padding:6px 4px;line-height:1.4}
+#mpList,#vpList{list-style:none;margin:0;padding:0;overflow:auto;min-height:0}
+#mpList li,#vpList li{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+#mpList .muted,#vpList .muted{display:block;padding:6px 4px;line-height:1.4}
+.song small{font-size:.7em;font-weight:600;opacity:.6;margin-left:6px}
 .song{flex:1;min-width:0;height:52px;border-radius:12px;border:2px solid #cfd6cf;background:#fff;font-size:18px;font-weight:700;color:#2e5545;text-align:left;padding:0 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .song.on{background:#2e5545;color:#fff;border-color:#2e5545}
 .mpx{flex:none;width:44px;height:44px;border-radius:10px;border:0;background:#eef0f2;font-size:15px;font-weight:700;color:#555}
@@ -191,6 +192,17 @@ body:not(.sheet) #penbar,body.editing #penbar{display:none}
 #mpStop{background:#2e5545;color:#fff}
 #mpStop:disabled{opacity:.35}
 button.chip.mus.on{background:#ffe27a;color:#3a3200}
+/* Video-Fenster: wie das Blatt verschiebbar, an der Ecke größer ziehbar, ⛶ = ganzer Bildschirm */
+#vwin{position:fixed;z-index:7;background:rgba(18,30,25,.96);border-radius:14px;box-shadow:0 16px 44px rgba(0,0,0,.5);padding:0 7px 7px}
+#vhead{display:flex;align-items:center;gap:6px;height:58px;cursor:move;touch-action:none;padding:0 2px;overflow:hidden}
+#vhead .grip{font-size:24px;opacity:.6;padding:0 4px;flex:none}
+#vname{flex:1;min-width:0;font-weight:700;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#vid{display:block;background:#000;border-radius:8px}
+#vRz{position:absolute;right:-4px;bottom:-4px;width:46px;height:46px;cursor:nwse-resize;touch-action:none;border-radius:0 0 14px 0;background:linear-gradient(135deg,transparent 52%,#8f959b 52%,#8f959b 60%,transparent 60%,transparent 68%,#8f959b 68%,#8f959b 76%,transparent 76%)}
+#vwin.full{left:0!important;top:0!important;right:0;bottom:0;width:auto!important;border-radius:0;background:#000;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top);box-shadow:none}
+#vwin.full #vhead{cursor:default}
+#vwin.full #vid{flex:1;min-height:0;width:100%!important;height:auto!important;border-radius:0}
+#vwin.full #vRz{display:none}
 #menu button.armed{background:#e53935}
 body.editing #menu{display:none}
 
@@ -248,6 +260,13 @@ body.standalone #mFull{display:none}
   #penbar{top:auto;transform:none;bottom:calc(max(10px,env(safe-area-inset-bottom)) + 52px);grid-template-columns:repeat(7,48px)}
   #penbar .sep{display:none}
   body.sheetfull #penbar{bottom:max(10px,env(safe-area-inset-bottom))}
+  /* Menüleiste schmaler, damit alle Knöpfe in eine Zeile passen */
+  #menu{gap:4px}
+  #menu button{padding:0 8px;font-size:14px;white-space:nowrap}
+  /* alles (auch die Uhr) steht über der Menüleiste, nichts verdeckt die Knöpfe */
+  #stage{padding-bottom:calc(max(10px,env(safe-area-inset-bottom)) + 56px)}
+  #right{padding-bottom:0}
+  #clockBox{bottom:calc(max(10px,env(safe-area-inset-bottom)) + 56px)}
 }
 </style>
 </head>
@@ -310,6 +329,7 @@ body.standalone #mFull{display:none}
 <div id="menu">
   <button id="mCam">📷 Kamera</button>
   <button id="mMusic">🎵 Musik</button>
+  <button id="mVideo">🎬 Video</button>
   <button id="mTimer">⏱ Timer</button>
   <button id="mSheet">📝 Blatt</button>
   <button id="mEdit">✏️ Planen</button>
@@ -330,6 +350,7 @@ body.standalone #mFull{display:none}
       <li><code>[Bild 1]</code> = Bild 1 erscheint automatisch, wenn der Punkt dran ist</li>
       <li><code>[Buch] S. 12</code> = Bildkarte „Buch“, angezeigt wird nur „S. 12“ (Bilder nur mit eckigen Klammern; gibt es die Karte nicht, bleibt das Feld leer) · <code>[Buch 2]</code> = Karte für Klasse 2 · Karten: <span id="cardList"></span></li>
       <li><code>[Musik Aufräumlied]</code> = Musik-Knopf an diesem Punkt (spielt das Lied „Aufräumlied“; die Lieder laden Sie unten rechts über „🎵 Musik“)</li>
+      <li><code>[Video Igel]</code> = Video-Knopf an diesem Punkt (öffnet das Video „Igel“; Videos laden Sie unten rechts über „🎬 Video“)</li>
       <li><code>&gt; Text</code> = Info-Karte rechts – Farbwörter (rot, gelb, grün …) werden farbig</li>
       <li><code>Titel: …</code> = Überschrift. <b>Jede weitere <code>Titel:</code>-Zeile beginnt eine neue Stunde</b> (eigene Seite, blättern mit ◀ ▶). Auch <code>---</code> beginnt eine neue Seite.</li>
     </ul>
@@ -388,6 +409,17 @@ body.standalone #mFull{display:none}
   <div class="mpact"><button id="mpStop" disabled>■ Stopp</button><button id="mpLoop" title="Lied immer wieder von vorn spielen">🔁 Wiederholen</button></div>
   <div class="mpact"><button id="mpLoad">＋ Musik laden</button></div>
 </div>
+<div id="vpanel" hidden>
+  <div class="mph"><span>🎬 Video</span><button id="vpClose" title="Schließen">✕</button></div>
+  <ul id="vpList"></ul>
+  <div class="mpact"><button id="vpLoad">＋ Video laden</button></div>
+</div>
+<div id="vwin" hidden>
+  <div id="vhead"><span class="grip" title="Zum Verschieben ziehen">⠿</span><span id="vname"></span><button class="hbtn" id="vFull" title="Ganzer Bildschirm">⛶</button><button class="hbtn" id="vClose" title="Video schließen">✕</button></div>
+  <video id="vid" controls playsinline preload="metadata"></video>
+  <div id="vRz" title="Zum Vergrößern ziehen"></div>
+</div>
+<input type="file" id="fileVideo" accept="video/*,.mp4,.mov,.m4v,.webm" multiple hidden>
 <input type="file" id="fileMusic" accept="audio/*,.mp3,.m4a,.wav,.aac" multiple hidden>
 <input type="file" id="fileLesson" accept=".json,application/json" hidden>
 <input type="file" id="fileCards" accept="image/*" multiple hidden>
@@ -492,6 +524,7 @@ function parseItem(line){
   const em=s.match(EMOJI_RE);if(em){icon=em[1];s=s.slice(em[0].length)}
   // [Musik Aufräumlied] = Musik-Knopf an diesem Punkt (vor den Karten, sonst würde „Musik …“ als Karte gesucht)
   s=s.replace(/\[\s*(?:musik|lied)\b\s*:?\s*([^\]]*)\]/i,(m,n)=>{music=n.trim();return ' '});
+  let video=null;s=s.replace(/\[\s*(?:video|film)\b\s*:?\s*([^\]]*)\]/i,(m,n)=>{video=n.trim();return ' '});
   // [Bild 1] = Seite 1 im Blatt (wie bisher)
   s=s.replace(/\[\s*bild\s*(\d*)\s*\]/i,(m,n)=>{bild=n?+n:1;return ' '});
   // [Karte Buch] = Karte, das Wort verschwindet aus dem Text
@@ -502,7 +535,7 @@ function parseItem(line){
   s=s.replace(/(^|\s)(\d{1,3})\s*(?:minuten|min\.?|')(?=\s|$)/i,(m,a,n)=>{dur=+n;return ' '});
   const label=s.replace(/\s{2,}/g,' ').trim();
   // Ohne [ ] oder ohne passende Karte bleibt das Feld leer. Klasse: aus „[Buch 2]“, sonst aus dem Titel der Stunde.
-  return {label,icon,card:found?found.card:null,cardCls:found?found.cls:null,dur,bild,soz,music,tasks:[]};
+  return {label,icon,card:found?found.card:null,cardCls:found?found.cls:null,dur,bild,soz,music,video,tasks:[]};
 }
 // Ein Plan kann mehrere Stunden (Seiten) enthalten: jede „Titel:“-Zeile oder „---“ beginnt eine neue Seite
 function parse(text){
@@ -612,6 +645,7 @@ function renderAgenda(){
     it.soz.forEach(k=>{const z=SOZ[k];if(z)meta.append(el('span','chip',z[0]+' '+z[1]))});
     if(it.dur){const b=el('button','chip','⏱ '+it.dur+' min');b.title='Timer starten';b.onclick=e=>{e.stopPropagation();startTimer(it.dur)};meta.append(b)}
     if(it.music!=null){const b=el('button','chip mus');b.dataset.song=it.music;b.title='Musik abspielen / stoppen';b.onclick=e=>{e.stopPropagation();playByName(it.music)};meta.append(b)}
+    if(it.video!=null){const b=el('button','chip vidc');b.dataset.vid=it.video;b.title='Video öffnen';b.onclick=e=>{e.stopPropagation();openVideoByName(it.video)};meta.append(b)}
     if(it.bild){const b=el('button','chip','🖼 Bild '+it.bild);b.onclick=e=>{e.stopPropagation();const p=S.pages[it.bild-1];if(p){S.view=p.id;S.sheet.on=true;renderSheet();save()}else toast('Bild '+it.bild+' gibt es noch nicht – Screenshot machen und Strg+V drücken.')};meta.append(b)}
     if(meta.children.length)body.append(meta);
     const chk=el('button','chk');chk.innerHTML=CHECK;chk.title='Erledigt';
@@ -620,7 +654,7 @@ function renderAgenda(){
     if(i===cur&&it.tasks.length){const tl=el('ul','tasks');it.tasks.forEach(t=>tl.append(el('li',null,t)));li.append(tl)}
     ul.append(li);
   });
-  musicChips();
+  musicChips();videoChips();
   fitLeft();
 }
 function toggleDone(i){
@@ -1296,6 +1330,117 @@ $('#fileMusic').onchange=e=>{const f=[...e.target.files];e.target.value='';if(f.
 // woanders hintippen schließt das Musikfenster
 addEventListener('pointerdown',e=>{if(!$('#mpanel').hidden&&!e.target.closest('#mpanel,#mMusic,.chip.mus'))closeMusic()},true);
 
+/* ---------- Video: eigene Dateien, bleiben nur auf diesem Gerät ---------- */
+// Videos sind groß: sie werden als Datei gespeichert und erst beim Öffnen geladen (nicht alle beim Start).
+let VIDS=[],curVid=null,curVidUrl=null;   // VIDS: [{id,name,type,size}]
+const vid=$('#vid');
+async function loadVideos(){VIDS=(await DB.get('videos'))||[];renderVideos();videoChips()}
+async function addVideos(files){
+  let ok=0,big=false;
+  try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(_){} // Speicher nicht automatisch leeren
+  toast(files.length===1?'Video wird gespeichert …':files.length+' Videos werden gespeichert …');
+  for(const f of files){
+    try{
+      const name=songName(f.name),type=f.type||'video/mp4';
+      const ex=VIDS.find(v=>norm(v.name)===norm(name)),id=ex?ex.id:uid(); // gleicher Name = ersetzen
+      let stored=await DB.set('vid:'+id,new Blob([f],{type}));
+      // ältere Geräte können keine Dateien speichern -> als Daten (nur bei nicht zu großen Videos)
+      if(!stored&&f.size<150e6)stored=await DB.set('vid:'+id,await f.arrayBuffer());
+      if(!stored){big=true;throw 0}
+      if(ex){ex.type=type;ex.size=f.size;if(curVid===id)closeVideo()}else VIDS.push({id,name,type,size:f.size});
+      ok++;
+    }catch(_){}
+  }
+  VIDS.sort((a,b)=>a.name.localeCompare(b.name,'de'));
+  await DB.set('videos',VIDS);renderVideos();render();
+  toast(ok===files.length?(ok===1?'1 Video geladen':ok+' Videos geladen'):ok+' von '+files.length+' Videos geladen'+(big?' – zu groß für den Speicher der App':''));
+}
+async function deleteVideo(id){
+  if(curVid===id)closeVideo();
+  VIDS=VIDS.filter(v=>v.id!==id);await DB.del('vid:'+id);await DB.set('videos',VIDS);renderVideos();videoChips();
+}
+function findVideo(name){
+  const k=norm(name||'');if(!k)return null;
+  return VIDS.find(v=>norm(v.name)===k)||VIDS.find(v=>norm(v.name).startsWith(k))||VIDS.find(v=>norm(v.name).includes(k))||null;
+}
+async function openVideo(id){
+  const v=VIDS.find(x=>x.id===id);if(!v)return;
+  closeVideoPanel();
+  if(curVid!==id){
+    vid.pause();
+    const d=await DB.get('vid:'+id);
+    if(!d){toast('Das Video ließ sich nicht laden.');return}
+    if(curVidUrl)URL.revokeObjectURL(curVidUrl); // nur ein Video im Speicher halten
+    curVidUrl=URL.createObjectURL(d instanceof Blob?d:new Blob([d],{type:v.type}));
+    vid.src=curVidUrl;curVid=id;
+  }
+  $('#vname').textContent='🎬 '+v.name;$('#vwin').hidden=false;layoutVideo();
+  const p=vid.play();if(p&&p.catch)p.catch(()=>{}); // startet es nicht von selbst: ▶ im Video antippen
+}
+function closeVideo(){vid.pause();$('#vwin').hidden=true;document.body.classList.remove('vidfull')}
+function openVideoByName(name){
+  const v=findVideo(name);
+  if(v){openVideo(v.id);return}
+  openVideoPanel();
+  if(name)toast('Das Video „'+name+'“ ist auf diesem Gerät noch nicht geladen.');
+}
+// Video läuft -> Musik aus
+vid.addEventListener('play',()=>{if(playing)stopMusic()});
+vid.addEventListener('loadedmetadata',layoutVideo);
+function layoutVideo(){
+  const win=$('#vwin');if(win.hidden)return;
+  const full=!!S.vfull,VW=innerWidth,VH=innerHeight;
+  win.classList.toggle('full',full);$('#vFull').classList.toggle('on',full);$('#vFull').title=full?'Kleiner':'Ganzer Bildschirm';
+  if(full){vid.style.width=vid.style.height='';win.style.width='';return}
+  const asp=vid.videoWidth&&vid.videoHeight?vid.videoWidth/vid.videoHeight:16/9,b=S.vbox||{};
+  const w=Math.floor(clamp(b.w?b.w*VW:Math.min(VW*.62,960),240,Math.min(VW-PADX-8,(VH-HEAD-24)*asp))),h=Math.floor(w/asp);
+  vid.style.width=w+'px';vid.style.height=h+'px';win.style.width=(w+PADX)+'px';
+  win.style.left=clamp(b.x!=null?b.x*VW:(VW-w-PADX)/2,0,VW-w-PADX)+'px';
+  win.style.top=clamp(b.y!=null?b.y*VH:(VH-h-HEAD)/2,0,VH-h-HEAD-8)+'px';
+}
+// Verschieben am Kopf, Größe an der Ecke (wie beim Blatt)
+(function videoMoves(){
+  const win=$('#vwin'),head=$('#vhead'),rz=$('#vRz');let m=null;
+  head.addEventListener('pointerdown',e=>{
+    if(e.target.closest('button')||S.vfull)return;
+    m={t:'move',id:e.pointerId,x0:e.clientX,y0:e.clientY,r:win.getBoundingClientRect()};head.setPointerCapture(e.pointerId);e.preventDefault();
+  });
+  rz.addEventListener('pointerdown',e=>{
+    m={t:'size',id:e.pointerId,x0:e.clientX,y0:e.clientY,r:win.getBoundingClientRect(),w0:vid.offsetWidth,h0:vid.offsetHeight};rz.setPointerCapture(e.pointerId);e.preventDefault();
+  });
+  const move=e=>{
+    if(!m||e.pointerId!==m.id)return;
+    const dx=e.clientX-m.x0,dy=e.clientY-m.y0,r=m.r,iw=innerWidth,ih=innerHeight;
+    if(m.t==='move')S.vbox={x:(r.left+dx)/iw,y:(r.top+dy)/ih,w:(S.vbox&&S.vbox.w)||vid.offsetWidth/iw};
+    else{const d=Math.abs(dx)>Math.abs(dy*m.w0/m.h0)?dx:dy*m.w0/m.h0;S.vbox={x:r.left/iw,y:r.top/ih,w:Math.max(240,m.w0+d)/iw}}
+    layoutVideo();
+  };
+  const up=e=>{if(m&&e.pointerId===m.id){m=null;const r=win.getBoundingClientRect();S.vbox={x:r.left/innerWidth,y:r.top/innerHeight,w:vid.offsetWidth/innerWidth};save()}};
+  [head,rz].forEach(x=>{x.addEventListener('pointermove',move);x.addEventListener('pointerup',up);x.addEventListener('pointercancel',up)});
+})();
+$('#vFull').onclick=()=>{S.vfull=!S.vfull;layoutVideo();save()};
+$('#vClose').onclick=closeVideo;
+function videoChips(){
+  document.querySelectorAll('button.chip.vidc').forEach(b=>{const n=b.dataset.vid,v=findVideo(n);b.textContent='🎬 '+(v?v.name:(n||'Video'))});
+}
+function renderVideos(){
+  const ul=$('#vpList');ul.innerHTML='';
+  if(!VIDS.length)ul.append(el('li','muted','Noch keine Videos auf diesem Gerät. Tippen Sie auf „＋ Video laden“ und wählen Sie ein Video aus (aus Fotos oder Dateien). Kurze Videos gehen am besten. Im Plan öffnet [Video Name] das Video.'));
+  VIDS.forEach(v=>{
+    const li=el('li'),b=el('button','song','▶ '+v.name);b.onclick=()=>openVideo(v.id);
+    if(v.size)b.append(el('small',null,Math.max(1,Math.round(v.size/1e6))+' MB'));
+    const x=el('button','mpx','✕');x.title='Video entfernen';x.onclick=()=>confirmTap(x,()=>deleteVideo(v.id),'?');
+    li.append(b,x);ul.append(li);
+  });
+}
+function openVideoPanel(){closeMusic();$('#vpanel').hidden=false;renderVideos()}
+function closeVideoPanel(){$('#vpanel').hidden=true}
+$('#mVideo').onclick=()=>{if($('#vpanel').hidden)openVideoPanel();else closeVideoPanel()};
+$('#vpClose').onclick=closeVideoPanel;
+$('#vpLoad').onclick=()=>$('#fileVideo').click();
+$('#fileVideo').onchange=e=>{const f=[...e.target.files];e.target.value='';if(f.length)addVideos(f)};
+addEventListener('pointerdown',e=>{if(!$('#vpanel').hidden&&!e.target.closest('#vpanel,#mVideo,.chip.vidc'))closeVideoPanel()},true);
+
 /* ---------- Menü & Planen ---------- */
 function confirmTap(btn,fn,label){
   if(btn.dataset.armed){clearTimeout(+btn.dataset.armed);delete btn.dataset.armed;btn.classList.remove('armed');if(btn.dataset.orig!=null){btn.textContent=btn.dataset.orig}fn();return}
@@ -1436,6 +1581,7 @@ document.addEventListener('keydown',e=>{
   if(e.ctrlKey||e.metaKey||e.altKey)return;
   if(['ArrowRight',' ','PageDown','Enter'].includes(e.key)){e.preventDefault();checkCurrent()}
   else if(['ArrowLeft','PageUp','Backspace'].includes(e.key)){e.preventDefault();uncheckLast()}
+  else if(e.key==='Escape'&&!$('#vwin').hidden)closeVideo();
   else if(e.key==='Escape'&&S.sheet.on&&S.sheet.full)setSheetFull(false);
   else if(e.key==='Escape'&&S.sheet.on){S.sheet.on=false;renderSheet();save()}
 });
@@ -1449,7 +1595,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
 
 /* ---------- Start ---------- */
 function render(){PLAN=parse(S.text);S.std=Math.min(Math.max(S.std||0,0),PLAN.length-1);P=PLAN[S.std];renderAgenda();renderRight()}
-let rT;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{render();layoutBig()},80)});
+let rT;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{render();layoutBig();layoutVideo()},80)});
 (async()=>{
   CARDSTORE=(await DB.get('cards'))||{};buildCards();renderCards();
   const saved=await DB.get('current');
@@ -1459,7 +1605,7 @@ let rT;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{render
     if(left<-20*60000)T=S.T=null;else{if(left<=0)T.rung=true;$('#timer').hidden=false}}
   render();tickClock();setInterval(tickClock,250);
   if(T&&S.bigT)showBig();
-  loadSongs();
+  loadSongs();loadVideos();
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(render);
 })();
 </script>

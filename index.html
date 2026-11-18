@@ -1713,6 +1713,13 @@ const classKey=t=>{const m=(t||'').match(/(?:^|[^0-9a-zäöü])([1-9])\s?([a-e])
 function fotoKey(){const st=P.start||{};if(st.foto)return 'n:'+norm(st.foto);return st.cls?'k:'+st.cls:'t:'+norm(st.text||'')}
 const FOTOS={};   // key -> Adresse (oder null = keins)
 async function getFoto(k){if(!(k in FOTOS))FOTOS[k]=(await DB.get('sfoto:'+k))||null;return FOTOS[k]}
+// [Lama] in der Start-Zeile: gibt es eine Bildkarte „Lama“, wird sie das Foto (große Fassung, wenn vorhanden)
+async function cardFoto(name){
+  if(!name)return null;const f=lookupCard(name);if(!f)return null;
+  const s=srcFor(f.card,f.cls||0),q=Object.keys(f.card.srcs).find(k=>f.card.srcs[k]===s);
+  const id=f.card.id+(q&&q!=='0'?'@'+q:'');
+  return (await DB.get('cardbig:'+id))||s;
+}
 function renderStart(){
   const box=$('#start');
   if(!P.start){box.hidden=true;document.body.classList.remove('startpg');return}
@@ -1721,7 +1728,7 @@ function renderStart(){
   $('#stPrev').hidden=!(S.std>0);$('#stNext').hidden=!(S.std<PLAN.length-1);
   tickStart();box.hidden=false;document.body.classList.add('startpg');
   const fk=fotoKey();box.dataset.k=fk;
-  getFoto(fk).then(u=>{
+  getFoto(fk).then(u=>u||cardFoto(st.foto)).then(u=>{
     if(box.dataset.k!==fk)return;
     const im=$('#stImg');
     if(u){if(im.getAttribute('src')!==u)im.src=u;im.hidden=false}else{im.hidden=true;im.removeAttribute('src')}
@@ -1793,7 +1800,7 @@ function renderCards(){
   CARDS.forEach(card=>all.filter(c=>c.base===card.id).sort((a,b)=>a.cls-b.cls).forEach(c=>{
     const f=el('figure','kc');const im=new Image();im.src=c.src;im.alt=c.n;
     const x=el('button','kx','✕');x.title='Karte entfernen';
-    x.onclick=()=>confirmTap(x,async()=>{delete CARDSTORE[c.id];await DB.set('cards',CARDSTORE);buildCards();renderCards();render()},'?');
+    x.onclick=()=>confirmTap(x,async()=>{delete CARDSTORE[c.id];DB.del('cardbig:'+c.id);await DB.set('cards',CARDSTORE);buildCards();renderCards();render()},'?');
     f.append(im,el('figcaption',null,c.n+(c.cls?' · Kl. '+c.cls:'')),x);g.append(f);
   }));
 }
@@ -1815,6 +1822,13 @@ async function addCardFiles(files){
       if(clear)data=c.toDataURL('image/png');
       else{x.globalCompositeOperation='destination-over';x.fillStyle='#fff';x.fillRect(0,0,w,h);data=c.toDataURL('image/jpeg',0.85)}
       const info=cardFromFile(file.name);
+      // große Fassung (für den ganzen Bildschirm, z. B. als Foto der Startseite)
+      if(!clear&&Math.max(img.naturalWidth,img.naturalHeight)>700){
+        const K=Math.min(1,1920/Math.max(img.naturalWidth,img.naturalHeight)),B=document.createElement('canvas');
+        B.width=Math.round(img.naturalWidth*K);B.height=Math.round(img.naturalHeight*K);
+        const bx=B.getContext('2d');bx.fillStyle='#fff';bx.fillRect(0,0,B.width,B.height);bx.drawImage(img,0,0,B.width,B.height);
+        await DB.set('cardbig:'+info.id,B.toDataURL('image/jpeg',0.85));
+      }else await DB.del('cardbig:'+info.id);
       CARDSTORE[info.id]={...info,file:file.name,src:data};ok++;
     }catch(_){}
   }
@@ -1824,7 +1838,7 @@ async function addCardFiles(files){
 }
 $('#cardLoad').onclick=()=>$('#fileCards').click();
 $('#fileCards').onchange=e=>{const f=[...e.target.files];e.target.value='';if(f.length)addCardFiles(f)};
-$('#cardClear').onclick=()=>confirmTap($('#cardClear'),async()=>{CARDSTORE={};await DB.set('cards',CARDSTORE);buildCards();renderCards();render()},'Alle Karten entfernen? Nochmal tippen');
+$('#cardClear').onclick=()=>confirmTap($('#cardClear'),async()=>{Object.keys(CARDSTORE).forEach(id=>DB.del('cardbig:'+id));CARDSTORE={};await DB.set('cards',CARDSTORE);buildCards();renderCards();render()},'Alle Karten entfernen? Nochmal tippen');
 function openEditor(){src.value=S.text;ed.classList.add('open');document.body.classList.add('editing');renderLessons();setTimeout(()=>src.focus(),260)}
 function closeEditor(){ed.classList.remove('open');document.body.classList.remove('editing');render()}
 $('#mEdit').onclick=openEditor;$('#eClose').onclick=closeEditor;

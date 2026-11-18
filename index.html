@@ -1371,7 +1371,11 @@ async function openVideo(id){
     const d=await DB.get('vid:'+id);
     if(!d){toast('Das Video ließ sich nicht laden.');return}
     if(curVidUrl)URL.revokeObjectURL(curVidUrl); // nur ein Video im Speicher halten
-    curVidUrl=URL.createObjectURL(d instanceof Blob?d:new Blob([d],{type:v.type}));
+    // Das iPad spielt Videos nicht direkt aus dem Speicher der App ab (Fehler „WebKitBlobResource“):
+    // darum erst in den Arbeitsspeicher lesen und daraus eine frische Datei machen – wie bei der Musik.
+    let buf=d;
+    if(d instanceof Blob){try{buf=await d.arrayBuffer()}catch(_){buf=null}}
+    curVidUrl=URL.createObjectURL(buf?new Blob([buf],{type:v.type||'video/mp4'}):d);
     vid.src=curVidUrl;curVid=id;
   }
   $('#vname').textContent='🎬 '+v.name;$('#vwin').hidden=false;layoutVideo();
@@ -1387,6 +1391,8 @@ function openVideoByName(name){
 // Video läuft -> Musik aus
 vid.addEventListener('play',()=>{if(playing)stopMusic()});
 vid.addEventListener('loadedmetadata',layoutVideo);
+// Video lässt sich nicht abspielen (z. B. iPad-Video im .mov-Format auf dem PC) -> Hinweis statt schwarzem Fenster
+vid.addEventListener('error',()=>{if(!$('#vwin').hidden&&vid.src)toast('Dieses Video kann hier nicht abgespielt werden. Am besten als MP4 speichern und neu laden.')});
 function layoutVideo(){
   const win=$('#vwin');if(win.hidden)return;
   const full=!!S.vfull,VW=innerWidth,VH=innerHeight;

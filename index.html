@@ -1506,15 +1506,27 @@ const APPS_DEFAULT=[
   {name:'Mathe Klasse 1',url:'https://frauza.github.io/Mathe-Klasse-1/'},
   {name:'Mathe 1_Zahlenstart',url:'https://mathe-klasse-1-zahlenstart.vercel.app'},
   {name:'Mathe Klasse 2',url:'https://klasse-2-wdh-rechenstrategien.vercel.app'},
+  {name:'Mathe 2 – Zahlenraum 100',url:'https://mathe-klasse-2-zr100.vercel.app'},
   {name:'Spiegeln (Klasse 2)',url:'https://frauza.github.io/Mathe-Symmetrie/'},
   {name:'Mal und Geteilt',url:'https://frauza.github.io/Mal--und-Geteiltaufgaben-ben/'}
 ];
 let APPS=[],curApp=null;   // APPS: [{id,name,url}]
 async function loadApps(){
-  const a=await DB.get('apps');
+  const a=await DB.get('apps'),seen=(await DB.get('appsSeen'))||[];
   APPS=Array.isArray(a)?a:APPS_DEFAULT.map(x=>({id:uid(),...x}));
+  let changed=false;
   // alter Name aus der ersten Fassung -> neuer Name (falls die Liste schon gespeichert ist)
-  APPS.forEach(x=>{if(x.name==='Zahlen-Start (Klasse 1)'){x.name='Mathe 1_Zahlenstart';saveApps()}});
+  APPS.forEach(x=>{if(x.name==='Zahlen-Start (Klasse 1)'){x.name='Mathe 1_Zahlenstart';changed=true}});
+  // neu dazugekommene Apps auch in schon gespeicherte Listen eintragen (an ihrer Stelle);
+  // was einmal angeboten wurde, kommt nach ✕ nicht wieder
+  if(Array.isArray(a))APPS_DEFAULT.forEach((d,i)=>{
+    const u=fixUrl(d.url);
+    if(seen.includes(u)||APPS.some(x=>fixUrl(x.url)===u))return;
+    const prev=APPS_DEFAULT.slice(0,i).map(p=>fixUrl(p.url)),at=APPS.map(x=>fixUrl(x.url)).findLastIndex(x=>prev.includes(x));
+    APPS.splice(at+1,0,{id:uid(),...d});changed=true;
+  });
+  if(changed)saveApps();
+  DB.set('appsSeen',APPS_DEFAULT.map(d=>fixUrl(d.url)));
   renderApps();appChips();
 }
 const saveApps=()=>DB.set('apps',APPS);

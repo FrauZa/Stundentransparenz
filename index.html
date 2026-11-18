@@ -237,8 +237,15 @@ button.chip.mus.on{background:#ffe27a;color:#3a3200}
 #start.nofoto #stShade{display:none}
 #stText{position:absolute;left:0;right:0;bottom:calc(max(10px,env(safe-area-inset-bottom)) + 42px + 4vh);padding:0 5vw;text-align:center;color:#fff;text-shadow:0 3px 18px rgba(0,0,0,.55)}
 #start.nofoto #stText{bottom:auto;top:50%;transform:translateY(-50%)}
-#stGreet{font-size:clamp(40px,7.5vmin,120px);font-weight:800;line-height:1.08;overflow-wrap:anywhere}
-#stDate{font-size:clamp(20px,3.4vmin,46px);font-weight:600;margin-top:1.4vh;opacity:.95}
+/* Textfeld der Startseite: verschiebbar (anfassen und ziehen), antippen = Rahmen mit Ecke zum Größer-/Kleinerziehen */
+#stText{cursor:move;touch-action:none;border-radius:14px}
+#stText.own{right:auto;bottom:auto;transform:none;padding:6px 14px;width:max-content;max-width:calc(100vw - 8px)}
+#stText.sel{outline:3px dashed rgba(255,255,255,.85);outline-offset:4px;background:rgba(0,0,0,.12)}
+#stRz,#stReset{display:none}
+#stText.sel #stRz{display:block;position:absolute;right:-16px;bottom:-16px;width:46px;height:46px;cursor:nwse-resize;touch-action:none;border-radius:0 0 14px 0;background:linear-gradient(135deg,transparent 52%,#fff 52%,#fff 60%,transparent 60%,transparent 68%,#fff 68%,#fff 76%,transparent 76%);filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+#stText.sel #stReset{display:block;position:absolute;left:-6px;top:-54px;height:40px;border-radius:10px;border:0;padding:0 12px;background:rgba(0,0,0,.55);color:#fff;font-size:14px;font-weight:700;text-shadow:none;white-space:nowrap}
+#stGreet{font-size:calc(var(--sf,1) * clamp(40px,7.5vmin,120px));font-weight:800;line-height:1.08;overflow-wrap:anywhere}
+#stDate{font-size:calc(var(--sf,1) * clamp(20px,3.4vmin,46px));font-weight:600;margin-top:1.4vh;opacity:.95}
 #stFoto{position:absolute;right:max(14px,env(safe-area-inset-right));top:max(14px,env(safe-area-inset-top));height:44px;border-radius:12px;border:0;padding:0 14px;background:rgba(0,0,0,.35);color:#fff;font-size:15px;font-weight:700;opacity:.55}
 #stFoto:hover{opacity:1}
 .stNav{position:absolute;top:50%;transform:translateY(-50%);width:56px;height:76px;border-radius:14px;border:0;background:rgba(0,0,0,.28);color:#fff;font-size:26px;opacity:.6}
@@ -398,7 +405,7 @@ body.standalone #mFull{display:none}
       <li><code>[Musik Aufräumlied]</code> = Musik-Knopf an diesem Punkt (spielt das Lied „Aufräumlied“; die Lieder laden Sie unten rechts über „🎵 Musik“)</li>
       <li><code>[Video Igel]</code> = Video-Knopf an diesem Punkt (öffnet das Video „Igel“; Videos laden Sie unten rechts über „🎬 Video“)</li>
       <li><code>[App Mal und Geteilt]</code> = App-Knopf an diesem Punkt (öffnet die App) · <code>[QR Mal und Geteilt]</code> = zeigt gleich den großen QR-Code zum Scannen (Ihre Apps stehen unten rechts unter „🧮 Apps“)</li>
-      <li><code>Start: Guten Morgen, 2a!</code> = eigene Startseite (Foto + dieser Text), z. B. vor <code>Titel: Mathe 2a</code>. Antippen oder ▶ → die nächste Seite, ◀ → zurück zur Startseite. Das Foto wählen Sie auf der Startseite oben rechts; es gilt für die Klasse (aus dem Text oder der Stunde danach). <code>Start: Hallo! [Ausflug]</code> = eigenes Foto „Ausflug“</li>
+      <li><code>Start: Guten Morgen, 2a!</code> = eigene Startseite (Foto + dieser Text), z. B. vor <code>Titel: Mathe 2a</code>. Antippen oder ▶ → die nächste Seite, ◀ → zurück zur Startseite. Das Foto wählen Sie auf der Startseite oben rechts; es gilt für die Klasse (aus dem Text oder der Stunde danach). Den Text auf der Startseite anfassen und ziehen = verschieben; antippen = Rahmen mit Ecke zum Größer-/Kleinerziehen, „↺ Standard“ = zurück an den alten Platz. <code>Start: Hallo! [Ausflug]</code> = eigenes Foto „Ausflug“</li>
       <li><code>&gt; Text</code> = Info-Karte rechts – Farbwörter (rot, gelb, grün …) werden farbig</li>
       <li><code>Titel: …</code> = Überschrift. <b>Jede weitere <code>Titel:</code>-Zeile beginnt eine neue Stunde</b> (eigene Seite, blättern mit ◀ ▶). Auch <code>---</code> beginnt eine neue Seite.</li>
     </ul>
@@ -487,7 +494,7 @@ body.standalone #mFull{display:none}
 </div>
 <div id="start" hidden>
   <img id="stImg" alt="" hidden><div id="stShade"></div>
-  <div id="stText"><div id="stGreet"></div><div id="stDate"></div></div>
+  <div id="stText"><div id="stGreet"></div><div id="stDate"></div><button id="stReset" title="Text wieder an den Standardplatz">↺ Standard</button><div id="stRz" title="Zum Vergrößern/Verkleinern ziehen"></div></div>
   <button id="stFoto" title="Foto für diesen Startbildschirm auswählen">🖼 Foto ändern</button>
   <button class="stNav" id="stPrev" title="Vorherige Seite">◀</button><button class="stNav" id="stNext" title="Weiter zur Stunde">▶</button>
 </div>
@@ -1727,7 +1734,7 @@ function renderStart(){
   $('#stGreet').textContent=st.text||('Guten Morgen'+(k?', '+k:'')+'!');
   $('#stPrev').hidden=!(S.std>0);$('#stNext').hidden=!(S.std<PLAN.length-1);
   tickStart();box.hidden=false;document.body.classList.add('startpg');
-  const fk=fotoKey();box.dataset.k=fk;
+  const fk=fotoKey();if(box.dataset.k!==fk)$('#stText').classList.remove('sel');box.dataset.k=fk;layoutStartText();
   getFoto(fk).then(u=>u||cardFoto(st.foto)).then(u=>{
     if(box.dataset.k!==fk)return;
     const im=$('#stImg');
@@ -1740,7 +1747,50 @@ function tickStart(){
   $('#stDate').textContent=d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'})+' · '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+' Uhr';
 }
 setInterval(()=>{if(!$('#start').hidden)tickStart()},5000);
-$('#start').addEventListener('click',e=>{if(!e.target.closest('button'))goStd(1)});
+// Ort und Größe des Textfelds gelten pro Foto (Klasse bzw. [Name]): S.stbox[key]={x,y,w,s} als Anteil vom Bildschirm
+function layoutStartText(){
+  const t=$('#stText'),b=(S.stbox||{})[$('#start').dataset.k];
+  if(!b){t.classList.remove('own');t.style.left=t.style.top='';t.style.removeProperty('--sf');return}
+  const VW=innerWidth,VH=innerHeight;
+  t.classList.add('own');t.style.setProperty('--sf',b.s);   // das Feld ist so breit wie der Text
+  const w=t.offsetWidth,h=t.offsetHeight;
+  t.style.left=clamp(b.x*VW,0,VW-w)+'px';t.style.top=clamp(b.y*VH,0,VH-h)+'px';
+}
+(function startTextMoves(){
+  const t=$('#stText'),rz=$('#stRz');let m=null,justMoved=false;
+  // aktuelles Feld als Kasten; beim ersten Mal nur so breit wie der Text selbst
+  const curBox=()=>{
+    const fk=$('#start').dataset.k,b=(S.stbox||{})[fk];if(b)return {...b};
+    const rg=document.createRange();rg.selectNodeContents($('#stGreet'));const g=rg.getBoundingClientRect(),r=t.getBoundingClientRect();
+    rg.selectNodeContents($('#stDate'));const d=rg.getBoundingClientRect();
+    return {x:(Math.min(g.left,d.left)-14)/innerWidth,y:r.top/innerHeight,s:1};
+  };
+  const begin=(e,type)=>{m={t:type,id:e.pointerId,x0:e.clientX,y0:e.clientY,b:curBox(),w0:t.getBoundingClientRect().width,moved:false};e.target.setPointerCapture(e.pointerId);e.preventDefault();e.stopPropagation()};
+  t.addEventListener('pointerdown',e=>{if(e.target.closest('button')||e.target===rz)return;begin(e,'move')});
+  rz.addEventListener('pointerdown',e=>begin(e,'size'));
+  const move=e=>{
+    if(!m||e.pointerId!==m.id)return;
+    const dx=e.clientX-m.x0,dy=e.clientY-m.y0;if(!m.moved&&Math.hypot(dx,dy)<6)return;m.moved=true;
+    const iw=innerWidth,ih=innerHeight,b=m.b,fk=$('#start').dataset.k;S.stbox=S.stbox||{};
+    if(m.t==='move')S.stbox[fk]={...b,x:b.x+dx/iw,y:b.y+dy/ih};
+    else{const w0=m.w0;S.stbox[fk]={...b,s:clamp(b.s*Math.max(80,w0+dx)/w0,.3,3)}} // Ecke ziehen = Schrift größer/kleiner
+    layoutStartText();
+  };
+  const up=e=>{
+    if(!m||e.pointerId!==m.id)return;
+    if(m.moved){const r=t.getBoundingClientRect(),fk=$('#start').dataset.k;if(S.stbox&&S.stbox[fk]){S.stbox[fk].x=r.left/innerWidth;S.stbox[fk].y=r.top/innerHeight}save();t.classList.add('sel')}
+    else if(m.t==='move')t.classList.toggle('sel');   // antippen = Rahmen an/aus
+    m=null;justMoved=true;setTimeout(()=>justMoved=false,0);
+  };
+  [t,rz].forEach(x=>{x.addEventListener('pointermove',move);x.addEventListener('pointerup',up);x.addEventListener('pointercancel',up)});
+  $('#stReset').onclick=e=>{e.stopPropagation();if(S.stbox)delete S.stbox[$('#start').dataset.k];t.classList.remove('sel');layoutStartText();save()};
+  // antippen daneben: erst den Rahmen weg, sonst weiter zur Stunde
+  $('#start').addEventListener('click',e=>{
+    if(e.target.closest('button')||e.target.closest('#stText')||justMoved)return;
+    if(t.classList.contains('sel')){t.classList.remove('sel');return}
+    goStd(1);
+  });
+})();
 $('#stPrev').onclick=e=>{e.stopPropagation();goStd(-1)};
 $('#stNext').onclick=e=>{e.stopPropagation();goStd(1)};
 $('#stFoto').onclick=e=>{e.stopPropagation();$('#fileStart').click()};
@@ -1922,7 +1972,7 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
 
 /* ---------- Start ---------- */
 function render(){PLAN=parse(S.text);S.std=Math.min(Math.max(S.std||0,0),PLAN.length-1);P=PLAN[S.std];renderAgenda();renderRight();renderStart()}
-let rT;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{render();layoutBig();layoutVideo();layoutApp();layoutQr()},80)});
+let rT;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{render();layoutBig();layoutVideo();layoutApp();layoutQr();layoutStartText()},80)});
 (async()=>{
   CARDSTORE=(await DB.get('cards'))||{};buildCards();renderCards();
   const saved=await DB.get('current');

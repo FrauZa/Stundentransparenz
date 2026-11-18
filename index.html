@@ -408,6 +408,7 @@ body.standalone #mFull{display:none}
       <li><code>[Video Igel]</code> = Video-Knopf an diesem Punkt (öffnet das Video „Igel“; Videos laden Sie unten rechts über „🎬 Video“)</li>
       <li><code>[App Mal und Geteilt]</code> = App-Knopf an diesem Punkt (öffnet die App) · <code>[QR Mal und Geteilt]</code> = zeigt gleich den großen QR-Code zum Scannen (Ihre Apps stehen unten rechts unter „🧮 Apps“)</li>
       <li><code>Start: Guten Morgen, 2a!</code> = eigene Startseite (Foto + dieser Text), z. B. vor <code>Titel: Mathe 2a</code>. Antippen oder ▶ → die nächste Seite, ◀ → zurück zur Startseite. Das Foto wählen Sie auf der Startseite oben rechts; es gilt für die Klasse (aus dem Text oder der Stunde danach). Den Text auf der Startseite anfassen und ziehen = verschieben; antippen = Rahmen: Ecke unten rechts = größer/kleiner, Griff rechts an der Seite = nur die Breite (Text bricht um), „↺ Standard“ = zurück an den alten Platz. <code>Start: Hallo! [Ausflug]</code> = eigenes Foto „Ausflug“</li>
+      <li><code>Ende: Tschüss, bis morgen!</code> = eigene Abschlussseite am Ende der Stunde (wie die Startseite, mit eigenem Foto, das Sie dort oben rechts wählen). <code>Ende: Schönes Wochenende! [Sonne]</code> = Foto bzw. Bildkarte „Sonne“</li>
       <li><code>&gt; Text</code> = Info-Karte rechts – Farbwörter (rot, gelb, grün …) werden farbig</li>
       <li><code>Titel: …</code> = Überschrift. <b>Jede weitere <code>Titel:</code>-Zeile beginnt eine neue Stunde</b> (eigene Seite, blättern mit ◀ ▶). Auch <code>---</code> beginnt eine neue Seite.</li>
     </ul>
@@ -634,10 +635,13 @@ function parse(text){
     let line=raw.trim();
     if(/^[-–—_]{3,}$/.test(line)){newPage();continue}
     // „Start: Guten Morgen, 2a!“ = eigene Startseite (Foto + Begrüßung), blättern mit ◀ ▶ wie bei den Stunden
-    const st=line.match(/^(?:[•·\-*]\s*)?start\s*(?::\s*(.*))?$/i);
+    // „Ende: Tschüss, bis morgen!“ = eigene Abschlussseite (eigenes Foto), genauso wie die Startseite
+    const st=line.match(/^(?:[•·\-*]\s*)?(start|ende)\s*(?::\s*(.*))?$/i);
     if(st){
-      let txt=(st[1]||'').trim(),foto='';txt=txt.replace(/\[([^\]]*)\]/,(m,n)=>{foto=n.trim();return ' '}).replace(/\s{2,}/g,' ').trim();
-      const sp={title:txt||'Start',titled:false,items:[],info:[],start:{text:txt,foto}};
+      const end=st[1].toLowerCase()==='ende';
+      let txt=(st[2]||'').trim(),foto='';txt=txt.replace(/\[([^\]]*)\]/,(m,n)=>{foto=n.trim();return ' '}).replace(/\s{2,}/g,' ').trim();
+      const sp={title:txt||(end?'Ende':'Start'),titled:false,items:[],info:[],start:{text:txt,foto,end}};
+      if(end){if(out&&!out.start&&!out.titled&&!out.items.length&&!out.info.length)pages.pop();pages.push(sp);out=sp;continue}
       if(out&&!out.start&&!out.items.length&&!out.info.length){
         // „Titel: Mathe 2a“ direkt davor: Startseite kommt vor diese Stunde, die Stunde geht danach weiter
         if(out.titled){pages.splice(pages.length-1,0,sp);continue}
@@ -655,8 +659,8 @@ function parse(text){
     out.items.push(parseItem(line));
   }
   if(!pages.length)newPage();
-  // Klasse für das Foto der Startseite: aus dem Text („2a“), sonst aus der Stunde danach, sonst davor
-  pages.forEach((pg,i)=>{if(pg.start)pg.start.cls=classKey(pg.start.text)||classKey((pages[i+1]||{}).title)||classKey((pages[i-1]||{}).title)});
+  // Klasse für das Foto: aus dem Text („2a“), sonst aus der Stunde danach (Start) bzw. davor (Ende), sonst die andere
+  pages.forEach((pg,i)=>{if(pg.start){const a=classKey((pages[i+1]||{}).title),b=classKey((pages[i-1]||{}).title);pg.start.cls=classKey(pg.start.text)||(pg.start.end?b||a:a||b)}});
   return pages;
 }
 
@@ -1719,7 +1723,8 @@ addEventListener('pointerdown',e=>{if(!$('#apanel').hidden&&!e.target.closest('#
 // Fotos bleiben nur auf diesem Gerät (Kinderfotos gehören nicht ins Internet).
 const classKey=t=>{const m=(t||'').match(/(?:^|[^0-9a-zäöü])([1-9])\s?([a-e])(?![0-9a-zäöü])/i);return m?(m[1]+m[2]).toLowerCase():''};
 // welches Foto: [Name] aus der Start-Zeile, sonst die Klasse aus dem Titel (2a), sonst der Titel
-function fotoKey(){const st=P.start||{};if(st.foto)return 'n:'+norm(st.foto);return st.cls?'k:'+st.cls:'t:'+norm(st.text||'')}
+// Abschlussseite hat ihr eigenes Foto (e:2a), getrennt von der Startseite (k:2a)
+function fotoKey(){const st=P.start||{};if(st.foto)return 'n:'+norm(st.foto);return st.cls?(st.end?'e:':'k:')+st.cls:(st.end?'te:':'t:')+norm(st.text||'')}
 const FOTOS={};   // key -> Adresse (oder null = keins)
 async function getFoto(k){if(!(k in FOTOS))FOTOS[k]=(await DB.get('sfoto:'+k))||null;return FOTOS[k]}
 // [Lama] in der Start-Zeile: gibt es eine Bildkarte „Lama“, wird sie das Foto (große Fassung, wenn vorhanden)
@@ -1733,7 +1738,7 @@ function renderStart(){
   const box=$('#start');
   if(!P.start){box.hidden=true;document.body.classList.remove('startpg');return}
   const st=P.start,k=st.cls;
-  $('#stGreet').textContent=st.text||('Guten Morgen'+(k?', '+k:'')+'!');
+  $('#stGreet').textContent=st.text||(st.end?'Tschüss, bis morgen!':'Guten Morgen'+(k?', '+k:'')+'!');
   $('#stPrev').hidden=!(S.std>0);$('#stNext').hidden=!(S.std<PLAN.length-1);
   tickStart();box.hidden=false;document.body.classList.add('startpg');
   const fk=fotoKey();if(box.dataset.k!==fk)$('#stText').classList.remove('sel');box.dataset.k=fk;layoutStartText();

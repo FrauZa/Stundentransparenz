@@ -27,11 +27,14 @@ button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparen
 /* ---------- Bühne ---------- */
 #stage{position:fixed;inset:0;display:grid;grid-template-columns:minmax(0,42fr) minmax(0,58fr);grid-template-rows:auto minmax(0,1fr);gap:1.5vh 2.5vw;padding:4vh 3vw 3vh 4vw}
 #left{display:flex;flex-direction:column;min-height:0;overflow:hidden;padding-top:10px;padding-bottom:calc(var(--padL,0px) + 2vh);--fs:24px;position:relative;touch-action:none;grid-column:1;grid-row:2}
-#left.free{position:fixed;z-index:1;padding:12px 14px 16px;background:rgba(0,0,0,.16);border-radius:14px;height:auto}
+#left.free{position:fixed;z-index:1;padding:12px 14px 20px;background:rgba(0,0,0,.16);border-radius:14px;height:auto}
 /* rechter Rand: nur die Breite ändern (Schrift bleibt gleich) */
 #left{padding-right:16px}
 #leftW{position:absolute;top:0;right:0;bottom:48px;width:16px;z-index:2;cursor:ew-resize;touch-action:none}
 #leftW::after{content:'';position:absolute;top:50%;right:5px;width:5px;height:56px;margin-top:-28px;border-radius:3px;background:#8f959b;opacity:.9}
+/* unterer Rand: nur die Höhe ändern (Schrift bleibt gleich, wird nur kleiner, wenn es sonst nicht passt) */
+#leftH{position:absolute;left:0;right:48px;bottom:0;height:18px;z-index:2;cursor:ns-resize;touch-action:none}
+#leftH::after{content:'';position:absolute;left:50%;bottom:5px;width:56px;height:5px;margin-left:-28px;border-radius:3px;background:#8f959b;opacity:.9}
 #leftRz{position:absolute;right:0;bottom:0;width:44px;height:44px;z-index:2;cursor:nwse-resize;border-radius:0 0 14px 0;background:linear-gradient(135deg,transparent 52%,#8f959b 52%,#8f959b 60%,transparent 60%,transparent 68%,#8f959b 68%,#8f959b 76%,transparent 76%);opacity:.75}
 /* Überschrift: immer 30 px, immer einzeilig oben links an derselben Stelle (bewegt sich nicht mit dem Tagesplan).
    Sie geht über die ganze Breite, damit auch lange Titel in eine Zeile passen. */
@@ -331,6 +334,7 @@ body.standalone #mFull{display:none}
   <section id="left">
     <ul id="agenda"></ul>
     <div id="leftW" title="Nur die Breite ändern"></div>
+    <div id="leftH" title="Nur die Höhe ändern"></div>
     <div id="leftRz" title="Zum Vergrößern/Verkleinern ziehen"></div>
   </section>
   <section id="right">
@@ -776,12 +780,14 @@ function uncheckLast(){let best=-1,t=0;P.items.forEach((_,i)=>{const v=S.done[dk
 function layoutLeftBox(){
   const L=$('#left'),b=S.leftBox;
   L.classList.toggle('free',!!b);
-  if(!b){L.style.width=L.style.left=L.style.top=L.style.maxHeight='';return}
-  // frei: Breite vom Rahmen, Höhe richtet sich nach dem Inhalt (höchstens bis über die Menüleiste)
+  if(!b){L.style.width=L.style.left=L.style.top=L.style.maxHeight=L.style.height='';return}
+  // frei: Breite vom Rahmen, Höhe nach dem Inhalt oder – am grauen Streifen unten gezogen – fest
+  // (immer höchstens bis über die Menüleiste)
   // … und nie in die Titelzeile hinein
   const mt=menuTop(),tt=Math.round($('#titleRow').getBoundingClientRect().bottom)+8,w=clamp(b.w*innerWidth,200,innerWidth-8),top=clamp(b.y*innerHeight,tt,mt-120);
   L.style.width=w+'px';L.style.left=clamp(b.x*innerWidth,0,innerWidth-w)+'px';L.style.top=top+'px';
   L.style.maxHeight=(mt-top-8)+'px';
+  L.style.height=b.h?Math.round(clamp(b.h*innerHeight,90,mt-top-8))+'px':'';
 }
 // Oberkante der Menüleiste: Plan und Textfelder bleiben darüber, damit ihre Ecken greifbar sind
 function menuTop(){const r=$('#menu').getBoundingClientRect();return r.height?r.top:innerHeight-62}
@@ -895,25 +901,28 @@ function layoutClock(){
 })();
 // Ablauf: irgendwo ziehen = verschieben, gelbe Ecke = Größe. Kurzes Antippen bleibt ein normaler Tipp.
 (function leftMoves(){
-  const L=$('#left'),rz=$('#leftRz'),wz=$('#leftW');let m=null,dragged=0;
+  const L=$('#left'),rz=$('#leftRz'),wz=$('#leftW'),hz=$('#leftH');let m=null,dragged=0;
   L.addEventListener('pointerdown',e=>{
     if(e.pointerType==='mouse'&&e.button!==0)return;
-    m={t:e.target===rz?'size':e.target===wz?'width':'move',id:e.pointerId,x0:e.clientX,y0:e.clientY,r:L.getBoundingClientRect(),fs0:S.planFs||24,on:false};
+    m={t:e.target===rz?'size':e.target===wz?'width':e.target===hz?'height':'move',id:e.pointerId,x0:e.clientX,y0:e.clientY,r:L.getBoundingClientRect(),fs0:S.planFs||24,fixH:!!(S.leftBox&&S.leftBox.h),on:false};
     if(m.t!=='move')e.preventDefault();
   });
   addEventListener('pointermove',e=>{
     if(!m||e.pointerId!==m.id)return;
     const dx=e.clientX-m.x0,dy=e.clientY-m.y0,r=m.r,iw=innerWidth,ih=innerHeight;
     if(!m.on){if(Math.hypot(dx,dy)<(m.t==='move'?10:3))return;m.on=true;try{L.setPointerCapture(m.id)}catch(_){}}
-    if(m.t==='move'){S.leftBox={x:(r.left+dx)/iw,y:(r.top+dy)/ih,w:r.width/iw};layoutLeftBox()}
+    const h=m.fixH?{h:r.height/ih}:{};   // eine fest gezogene Höhe bleibt erhalten
+    if(m.t==='move'){S.leftBox={x:(r.left+dx)/iw,y:(r.top+dy)/ih,w:r.width/iw,...h};layoutLeftBox()}
     // rechter Rand: nur breiter/schmaler, Schriftgröße bleibt
-    else if(m.t==='width'){S.leftBox={x:r.left/iw,y:r.top/ih,w:Math.max(200,r.width+dx)/iw};fitLeft()}
+    else if(m.t==='width'){S.leftBox={x:r.left/iw,y:r.top/ih,w:Math.max(200,r.width+dx)/iw,...h};fitLeft()}
+    // grauer Streifen unten: nur höher/niedriger
+    else if(m.t==='height'){S.leftBox={x:r.left/iw,y:r.top/ih,w:r.width/iw,h:Math.max(90,r.height+dy)/ih};fitLeft()}
     // Ecke: Rahmen breiter/schmaler, Schrift wächst/schrumpft im gleichen Verhältnis
-    else{const w=Math.max(200,r.width+dx);S.leftBox={x:r.left/iw,y:r.top/ih,w:w/iw};S.planFs=Math.round(clamp(m.fs0*w/r.width,12,64)*10)/10;fitLeft()}
+    else{const w=Math.max(200,r.width+dx);S.leftBox={x:r.left/iw,y:r.top/ih,w:w/iw,...(m.fixH?{h:r.height*w/r.width/ih}:{})};S.planFs=Math.round(clamp(m.fs0*w/r.width,12,64)*10)/10;fitLeft()}
   });
   const up=e=>{
     if(!m||e.pointerId!==m.id)return;
-    if(m.on){const r=L.getBoundingClientRect();S.leftBox={x:r.left/innerWidth,y:r.top/innerHeight,w:r.width/innerWidth};fitLeft();save();dragged=Date.now()}
+    if(m.on){const r=L.getBoundingClientRect(),fix=m.fixH||m.t==='height';S.leftBox={x:r.left/innerWidth,y:r.top/innerHeight,w:r.width/innerWidth,...(fix?{h:r.height/innerHeight}:{})};fitLeft();save();dragged=Date.now()}
     m=null;
   };
   addEventListener('pointerup',up);addEventListener('pointercancel',up);

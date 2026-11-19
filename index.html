@@ -291,7 +291,8 @@ body.editing #menu{display:none}
 #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#16202a;color:#fff;padding:10px 18px;border-radius:10px;font-weight:600;font-size:15px;opacity:0;transition:.25s;pointer-events:none;z-index:30;max-width:80vw;text-align:center}
 #toast.show{opacity:1;transform:translateX(-50%)}
 /* App-Version: Ränder von iPad/Notch freihalten */
-#stage{padding-top:max(4vh,env(safe-area-inset-top));padding-left:max(4vw,env(safe-area-inset-left));padding-bottom:max(3vh,env(safe-area-inset-bottom))}
+/* unten bleibt immer Platz für die Menüleiste – der Plan reicht nie darunter */
+#stage{padding-top:max(4vh,env(safe-area-inset-top));padding-left:max(4vw,env(safe-area-inset-left));padding-bottom:calc(max(10px,env(safe-area-inset-bottom)) + 56px)}
 #menu{bottom:max(10px,env(safe-area-inset-bottom));right:max(12px,env(safe-area-inset-right))}
 #penbar{right:max(12px,env(safe-area-inset-right))}
 #clockBox{bottom:max(3vh,env(safe-area-inset-bottom))}
@@ -776,11 +777,13 @@ function layoutLeftBox(){
   const L=$('#left'),b=S.leftBox;
   L.classList.toggle('free',!!b);
   if(!b){L.style.width=L.style.left=L.style.top=L.style.maxHeight='';return}
-  // frei: Breite vom Rahmen, Höhe richtet sich nach dem Inhalt (höchstens bis zum unteren Rand)
-  const w=clamp(b.w*innerWidth,200,innerWidth-8),top=clamp(b.y*innerHeight,0,innerHeight-80);
+  // frei: Breite vom Rahmen, Höhe richtet sich nach dem Inhalt (höchstens bis über die Menüleiste)
+  const mt=menuTop(),w=clamp(b.w*innerWidth,200,innerWidth-8),top=clamp(b.y*innerHeight,0,mt-120);
   L.style.width=w+'px';L.style.left=clamp(b.x*innerWidth,0,innerWidth-w)+'px';L.style.top=top+'px';
-  L.style.maxHeight=(innerHeight-top-8)+'px';
+  L.style.maxHeight=(mt-top-8)+'px';
 }
+// Oberkante der Menüleiste: Plan und Textfelder bleiben darüber, damit ihre Ecken greifbar sind
+function menuTop(){const r=$('#menu').getBoundingClientRect();return r.height?r.top:innerHeight-62}
 function fitLeft(){
   const left=$('#left');
   layoutClock();layoutLeftBox();
@@ -788,7 +791,8 @@ function fitLeft(){
   const portrait=innerHeight>=innerWidth;
   // quer: Uhr steht unten in der rechten Hälfte -> rechts unten Platz lassen, links volle Höhe
   stage.style.setProperty('--padL','0px');
-  stage.style.setProperty('--padR',(S.clock||portrait?0:ch+66+12-innerHeight*.03)+'px');
+  const padB=parseFloat(getComputedStyle(stage).paddingBottom)||0,clockB=parseFloat(getComputedStyle(cb).bottom)||66;
+  stage.style.setProperty('--padR',(S.clock||portrait?0:Math.max(0,ch+clockB+12-padB))+'px');
   stage.style.setProperty('--clockW',(S.clock?0:cw)+'px');
   // hochkant: untere Zeile für Uhr und Info-Karte (Karte rechts neben der Uhr)
   stage.style.setProperty('--botH',(!portrait?0:S.clock?(P.info.length?Math.round(innerHeight*.22):0):Math.round(Math.max(ch,P.info.length?innerHeight*.22:0)))+'px');
@@ -1763,7 +1767,7 @@ function layoutStartText(){
   // ohne eigene Breite ist das Feld so breit wie der Text; mit Breite bricht der Text um
   t.classList.add('own');t.style.setProperty('--sf',b.s);t.style.width=b.w?Math.round(clamp(b.w*VW,120,VW-8))+'px':'';
   const w=t.offsetWidth,h=t.offsetHeight;
-  t.style.left=clamp(b.x*VW,0,VW-w)+'px';t.style.top=clamp(b.y*VH,0,VH-h)+'px';
+  t.style.left=clamp(b.x*VW,0,VW-w)+'px';t.style.top=clamp(b.y*VH,0,menuTop()-20-h)+'px';
 }
 (function startTextMoves(){
   const t=$('#stText'),rz=$('#stRz'),wh=$('#stW');let m=null,justMoved=false;

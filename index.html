@@ -783,9 +783,13 @@ function layoutLeftBox(){
   if(!b){L.style.width=L.style.left=L.style.top=L.style.maxHeight=L.style.height='';return}
   // frei: Breite vom Rahmen, Höhe nach dem Inhalt oder – am grauen Streifen unten gezogen – fest
   // (immer höchstens bis über die Menüleiste)
-  // … und nie in die Titelzeile hinein
-  const mt=menuTop(),tt=Math.round($('#titleRow').getBoundingClientRect().bottom)+8,w=clamp(b.w*innerWidth,200,innerWidth-8),top=clamp(b.y*innerHeight,tt,mt-120);
-  L.style.width=w+'px';L.style.left=clamp(b.x*innerWidth,0,innerWidth-w)+'px';L.style.top=top+'px';
+  // … und nie in den Titel, die Blätter-Knöpfe oder das Maskottchen hinein (nur was darüber steht, zählt)
+  const mt=menuTop(),w=clamp(b.w*innerWidth,200,innerWidth-8),left=clamp(b.x*innerWidth,0,innerWidth-w);
+  let tt=Math.round($('#titleRow').getBoundingClientRect().top);
+  ['#title','#pgNav','#mascot'].forEach(s=>{const e=$(s);if(!e||e.hidden)return;const r=e.getBoundingClientRect();
+    if(r.height&&r.right>left&&r.left<left+w)tt=Math.max(tt,Math.round(r.bottom)+2)});
+  const top=clamp(b.y*innerHeight,tt,mt-120);
+  L.style.width=w+'px';L.style.left=left+'px';L.style.top=top+'px';
   L.style.maxHeight=(mt-top-8)+'px';
   L.style.height=b.h?Math.round(clamp(b.h*innerHeight,90,mt-top-8))+'px':'';
 }

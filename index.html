@@ -239,7 +239,7 @@ button.chip.mus.on{background:#ffe27a;color:#3a3200}
 #start.nofoto #stText{bottom:auto;top:50%;transform:translateY(-50%)}
 /* Textfeld der Startseite: verschiebbar (anfassen und ziehen), antippen = Rahmen mit Ecke zum Größer-/Kleinerziehen */
 #stText{cursor:move;touch-action:none;border-radius:14px}
-#stText.own{right:auto;bottom:auto;transform:none;padding:6px 14px;width:max-content;max-width:calc(100vw - 8px)}
+#stText.own,#start.nofoto #stText.own{right:auto;bottom:auto;transform:none;padding:6px 14px;width:max-content;max-width:calc(100vw - 8px)}
 #stText.sel{outline:3px dashed rgba(255,255,255,.85);outline-offset:4px;background:rgba(0,0,0,.12)}
 #stRz,#stReset,#stW{display:none}
 #stText.sel #stW{display:block;position:absolute;right:-13px;top:50%;transform:translateY(-50%);width:22px;height:max(54px,55%);border-radius:11px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.5);cursor:ew-resize;touch-action:none}
@@ -778,7 +778,8 @@ function layoutLeftBox(){
   L.classList.toggle('free',!!b);
   if(!b){L.style.width=L.style.left=L.style.top=L.style.maxHeight='';return}
   // frei: Breite vom Rahmen, Höhe richtet sich nach dem Inhalt (höchstens bis über die Menüleiste)
-  const mt=menuTop(),w=clamp(b.w*innerWidth,200,innerWidth-8),top=clamp(b.y*innerHeight,0,mt-120);
+  // … und nie in die Titelzeile hinein
+  const mt=menuTop(),tt=Math.round($('#titleRow').getBoundingClientRect().bottom)+8,w=clamp(b.w*innerWidth,200,innerWidth-8),top=clamp(b.y*innerHeight,tt,mt-120);
   L.style.width=w+'px';L.style.left=clamp(b.x*innerWidth,0,innerWidth-w)+'px';L.style.top=top+'px';
   L.style.maxHeight=(mt-top-8)+'px';
 }
@@ -1767,7 +1768,9 @@ function layoutStartText(){
   // ohne eigene Breite ist das Feld so breit wie der Text; mit Breite bricht der Text um
   t.classList.add('own');t.style.setProperty('--sf',b.s);t.style.width=b.w?Math.round(clamp(b.w*VW,120,VW-8))+'px':'';
   const w=t.offsetWidth,h=t.offsetHeight;
-  t.style.left=clamp(b.x*VW,0,VW-w)+'px';t.style.top=clamp(b.y*VH,0,menuTop()-20-h)+'px';
+  // oben bleibt die Blätter-Leiste (◀ 1/3 ▶) frei – samt Platz für „↺ Standard“ über dem Feld
+  const tt=Math.round($('#stTop').getBoundingClientRect().bottom)+62;
+  t.style.left=clamp(b.x*VW,0,VW-w)+'px';t.style.top=clamp(b.y*VH,tt,menuTop()-20-h)+'px';
 }
 (function startTextMoves(){
   const t=$('#stText'),rz=$('#stRz'),wh=$('#stW');let m=null,justMoved=false;

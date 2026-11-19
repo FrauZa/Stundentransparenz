@@ -231,7 +231,7 @@ button.chip.mus.on{background:#ffe27a;color:#3a3200}
 #qrurl{font-size:max(11px,calc(var(--qf,40px)*.36));color:#666;margin-top:6px;word-break:break-all}
 #qrRz{position:absolute;right:-4px;bottom:-4px;width:46px;height:46px;cursor:nwse-resize;touch-action:none;border-radius:0 0 22px 0;background:linear-gradient(135deg,transparent 52%,#8f959b 52%,#8f959b 60%,transparent 60%,transparent 68%,#8f959b 68%,#8f959b 76%,transparent 76%)}
 /* Startbildschirm einer Stunde: Foto der Klasse + Begrüßung; antippen = Unterricht wie gewohnt */
-#start{position:fixed;inset:0;z-index:5;background:#2f5a43;cursor:pointer;overflow:hidden;-webkit-user-select:none;user-select:none}
+#start{position:fixed;inset:0;z-index:5;background:#2f5a43;cursor:pointer;touch-action:none;overflow:hidden;-webkit-user-select:none;user-select:none}
 #stImg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 #stShade{position:absolute;left:0;right:0;bottom:0;height:55%;background:linear-gradient(transparent,rgba(0,0,0,.62))}
 #start.nofoto #stShade{display:none}
@@ -250,10 +250,10 @@ button.chip.mus.on{background:#ffe27a;color:#3a3200}
 #stDate{font-size:calc(var(--sf,1) * clamp(20px,3.4vmin,46px));font-weight:600;margin-top:1.4vh;opacity:.95}
 #stFoto{position:absolute;right:max(14px,env(safe-area-inset-right));top:max(14px,env(safe-area-inset-top));height:44px;border-radius:12px;border:0;padding:0 14px;background:rgba(0,0,0,.35);color:#fff;font-size:15px;font-weight:700;opacity:.55}
 #stFoto:hover{opacity:1}
-.stNav{position:absolute;top:50%;transform:translateY(-50%);width:56px;height:76px;border-radius:14px;border:0;background:rgba(0,0,0,.28);color:#fff;font-size:26px;opacity:.6}
-.stNav:hover{opacity:1}
-#stPrev{left:max(12px,env(safe-area-inset-left))}
-#stNext{right:max(12px,env(safe-area-inset-right))}
+/* Blättern auf Start-/Abschlussseite: oben in der Mitte wie in der Stunde (◀ 1/3 ▶) */
+#stTop{position:absolute;left:50%;top:max(14px,env(safe-area-inset-top));transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:5px;border-radius:999px;background:rgba(0,0,0,.38);color:#fff;font-weight:700;font-size:20px}
+#stTop .pg{background:rgba(255,255,255,.22)}
+#stNum{min-width:2.6em;text-align:center}
 body.startpg #clockBox,body.startpg #sheet,body.startpg #penbar{visibility:hidden}
 #start.nofoto #stFoto{opacity:1;background:#ffe27a;color:#3a3200;font-size:18px;height:52px}
 #qrClose{position:absolute;right:10px;top:10px;width:46px;height:46px;border-radius:12px;border:0;background:#eef0f2;font-size:20px;font-weight:700;color:#333}
@@ -499,7 +499,7 @@ body.standalone #mFull{display:none}
   <img id="stImg" alt="" hidden><div id="stShade"></div>
   <div id="stText"><div id="stGreet"></div><div id="stDate"></div><button id="stReset" title="Text wieder an den Standardplatz">↺ Standard</button><div id="stW" title="Nur die Breite ändern (Text bricht um)"></div><div id="stRz" title="Zum Vergrößern/Verkleinern ziehen"></div></div>
   <button id="stFoto" title="Foto für diesen Startbildschirm auswählen">🖼 Foto ändern</button>
-  <button class="stNav" id="stPrev" title="Vorherige Seite">◀</button><button class="stNav" id="stNext" title="Weiter zur Stunde">▶</button>
+  <div id="stTop"><button class="pg" id="stPrev" title="Vorherige Seite">◀</button><span id="stNum"></span><button class="pg" id="stNext" title="Nächste Seite">▶</button></div>
 </div>
 <input type="file" id="fileStart" accept="image/*" hidden>
 <input type="file" id="fileVideo" accept="video/*,.mp4,.mov,.m4v,.webm" multiple hidden>
@@ -1739,7 +1739,8 @@ function renderStart(){
   if(!P.start){box.hidden=true;document.body.classList.remove('startpg');return}
   const st=P.start,k=st.cls;
   $('#stGreet').textContent=st.text||(st.end?'Tschüss, bis morgen!':'Guten Morgen'+(k?', '+k:'')+'!');
-  $('#stPrev').hidden=!(S.std>0);$('#stNext').hidden=!(S.std<PLAN.length-1);
+  $('#stTop').hidden=PLAN.length<2;$('#stNum').textContent=(S.std+1)+'/'+PLAN.length;
+  $('#stPrev').disabled=S.std<=0;$('#stNext').disabled=S.std>=PLAN.length-1;
   tickStart();box.hidden=false;document.body.classList.add('startpg');
   const fk=fotoKey();if(box.dataset.k!==fk)$('#stText').classList.remove('sel');box.dataset.k=fk;layoutStartText();
   getFoto(fk).then(u=>u||cardFoto(st.foto)).then(u=>{
@@ -1794,9 +1795,17 @@ function layoutStartText(){
   };
   [t,rz,wh].forEach(x=>{x.addEventListener('pointermove',move);x.addEventListener('pointerup',up);x.addEventListener('pointercancel',up)});
   $('#stReset').onclick=e=>{e.stopPropagation();if(S.stbox)delete S.stbox[$('#start').dataset.k];t.classList.remove('sel');layoutStartText();save()};
+  // wischen wie im Buch: nach rechts = vorige Seite, nach links = nächste Seite
+  let sw=null,swiped=false;
+  $('#start').addEventListener('pointerdown',e=>{if(!e.target.closest('button,#stText'))sw={x:e.clientX,y:e.clientY}});
+  $('#start').addEventListener('pointerup',e=>{
+    if(!sw)return;const dx=e.clientX-sw.x,dy=e.clientY-sw.y;sw=null;
+    if(Math.abs(dx)>60&&Math.abs(dx)>1.5*Math.abs(dy)){swiped=true;setTimeout(()=>swiped=false,400);t.classList.remove('sel');goStd(dx>0?-1:1)}
+  });
+  $('#start').addEventListener('pointercancel',()=>sw=null);
   // antippen daneben: erst den Rahmen weg, sonst weiter zur Stunde
   $('#start').addEventListener('click',e=>{
-    if(e.target.closest('button')||e.target.closest('#stText')||justMoved)return;
+    if(e.target.closest('button')||e.target.closest('#stText')||justMoved||swiped)return;
     if(t.classList.contains('sel')){t.classList.remove('sel');return}
     goStd(1);
   });
